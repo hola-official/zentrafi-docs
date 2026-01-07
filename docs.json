@@ -107,5 +107,8 @@
   "description": "Guide for sailors exploring ZentraFi",
   "background": {
     "decoration": "grid"
+  },
+  "appearance": {
+    "default": "system"
   }
 }
