@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "ZentraFi docs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0d1a36",
+    "light": "#122243",
+    "dark": "#0e1d3e"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "global": {
       "anchors": [
@@ -71,10 +71,7 @@
       }
     ]
   },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
+  "logo": "/logo/zentrafi-transparent.svg",
   "navbar": {
     "links": [
       {
@@ -106,5 +103,9 @@
       "github": "https://github.com/mintlify",
       "linkedin": "https://linkedin.com/company/mintlify"
     }
+  },
+  "description": "Guide for sailors exploring ZentraFi",
+  "background": {
+    "decoration": "grid"
   }
 }
