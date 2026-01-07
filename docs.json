@@ -43,7 +43,9 @@
             "pages": [
               {
                 "group": "Zentra App",
-                "pages": []
+                "pages": [
+                  "docs/products/zentra-app/introduction-to-bounding-curve"
+                ]
               },
               {
                 "group": "Zentra X",
