@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "aspen",
   "name": "ZentraFi docs",
   "colors": {
     "primary": "#004581",
@@ -33,7 +33,7 @@
     },
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Docs",
         "groups": [
           {
             "group": "Getting started",
@@ -57,14 +57,6 @@
               "essentials/code",
               "essentials/images",
               "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
             ]
           }
         ]
@@ -99,16 +91,30 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/zentrafi",
+      "github": "https://github.com/orgs/Zentra-Finance/",
+      "linkedin": "https://ng.linkedin.com/company/zentrafi",
+      "discord": "https://discord.gg/rW7VJ8JjbC",
+      "telegram": "https://t.me/zentrafi",
+      "website": "http://zentrafi.xyz/"
     }
   },
   "description": "Guide for sailors exploring ZentraFi",
   "background": {
-    "decoration": "grid"
+    "decoration": "gradient"
   },
   "appearance": {
     "default": "system"
+  },
+  "styling": {
+    "latex": true
+  },
+  "integrations": {
+    "ga4": {
+      "measurementId": "G-6PDT8LCJBR"
+    }
+  },
+  "thumbnails": {
+    "appearance": "dark"
   }
 }
