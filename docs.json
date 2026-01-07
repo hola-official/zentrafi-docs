@@ -37,7 +37,6 @@
         "pages": [
           "index",
           "docs/roadmap",
-          "docs/tokenomics",
           {
             "group": "Products",
             "pages": [
@@ -56,6 +55,7 @@
               }
             ]
           },
+          "docs/tokenomics",
           {
             "group": "Customization",
             "pages": [
