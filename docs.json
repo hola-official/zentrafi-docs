@@ -21,10 +21,13 @@
           "href": "https://www.zentrafi.xyz"
         },
         {
-          "anchor": "Blog",
+          "anchor": "Community",
           "icon": "newspaper",
-          "hidden": true,
-          "href": "https://mintlify.com/blog"
+          "color": {
+            "light": "#0d1a36",
+            "dark": "#0d1a36"
+          },
+          "href": "https://discord.gg/rW7VJ8JjbC"
         }
       ]
     },
@@ -65,30 +68,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "API reference",
-        "hidden": true,
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Overview"
       }
     ]
   },
