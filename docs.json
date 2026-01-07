@@ -39,10 +39,19 @@
           "docs/roadmap",
           "docs/tokenomics",
           {
-            "group": "Getting started",
+            "group": "Products",
             "pages": [
-              "quickstart",
-              "development"
+              {
+                "group": "Zentra App",
+                "tag": "Zentra App",
+                "pages": [
+                  "docs/products/zentra-app/untitled-page"
+                ]
+              },
+              {
+                "group": "Zentra X",
+                "pages": []
+              }
             ]
           },
           {
