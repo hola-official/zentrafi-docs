@@ -43,13 +43,13 @@
             "pages": [
               {
                 "group": "Zentra App",
-                "pages": [
-                  "docs/products/zentra-app/untitled-page"
-                ]
+                "pages": []
               },
               {
                 "group": "Zentra X",
-                "pages": []
+                "pages": [
+                  "docs/products/zentra-x/introduction-to-dlmm"
+                ]
               }
             ]
           },
