@@ -10,3 +10,62 @@ Inspired by Trader Joe's Liquidity Book, DLMM organizes asset pair liquidity int
 LPs earn revenue through three mechanisms: standard liquidity provision fees, dynamic fees during periods of market volatility, and Liquidity Mining (LM) rewards where available.
 
 DLMM also powers the DLMM Launch Pool, a specialized pool type for new token launches. This pool comes equipped with features optimized for bootstrapping liquidity and ensuring token accessibility on Jupiter and other trading platforms.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="High capital efficiency" icon="chart-line">
+    Concentrate tokens at or around current market value to support high-volume trading with minimal liquidity. Zero slippage within active bins reduces price impact and increases trading volume.
+  </Card>
+  
+  <Card title="Flexible volatility strategy" icon="sliders">
+    Build custom liquidity distributions tailored to your volatility strategies with precise control over efficient liquidity placement.
+  </Card>
+  
+  <Card title="Capture higher fees" icon="coins">
+    Maximize fee opportunities based on market conditions and risk profile. Provide single-sided liquidity with only one token, unlike typical AMMs.
+  </Card>
+  
+  <Card title="Dynamic fees" icon="arrow-trend-up">
+    Fees automatically adjust based on market volatility to offset potential losses and enhance profitability during volatile periods.
+  </Card>
+</CardGroup>
+
+## How it works
+
+Select token pairs for liquidity provision and choose a liquidity shape that aligns with your strategy.
+
+### Liquidity shapes
+
+<AccordionGroup>
+  <Accordion title="Spot" icon="circle-dot">
+    Provides uniform distribution suitable for any market type and conditions. Versatile and risk-adjusted approach.
+  </Accordion>
+  
+  <Accordion title="Curve" icon="chart-simple">
+    Concentrated approach that maximizes efficiency while minimizing volatility impact. Ideal for focused liquidity provision.
+  </Accordion>
+  
+  <Accordion title="Bid-ask" icon="arrows-left-right">
+    Inverse curve distribution, typically deployed single-sided for DCA strategies. Effective for capturing volatility in stable or pegged pairs.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Monitor your positions closely and adjust according to market conditions to manage impermanent loss risk. Unlike Dynamic AMM pools, DLMM is not connected to Dynamic Vaults for lending yield—all liquidity is used solely for trading.
+</Warning>
+
+## Dynamic fees
+
+Dynamic fees function as surge pricing that responds to market fluctuations and volatility.
+
+### How dynamic fees work
+
+Fees are highest during periods of peak demand and volatility, such as token launches. This mitigates aggressive bot activity while capturing more fees for token creators and LPs.
+
+Total swap fees consist of two components:
+
+- **Base fee**: Configured by the pool creator, determined by the base factor and bin step
+- **Variable fee**: Calculated from real-time price volatility, affected by swap frequency and bins crossed during swaps
+
+Fees are calculated and distributed per bin, ensuring fair allocation to LPs in each crossed bin. LPs can claim fees whenever available.
