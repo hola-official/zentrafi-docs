@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "ZentraFi docs",
   "colors": {
-    "primary": "#0d1a36",
-    "light": "#122243",
-    "dark": "#0e1d3e"
+    "primary": "#004581",
+    "light": "#0179a3",
+    "dark": "#003b6e"
   },
   "favicon": "/favicon.png",
   "navigation": {
@@ -76,7 +76,7 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:info@zentrafi.xyz"
       }
     ],
     "primary": {
