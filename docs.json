@@ -12,13 +12,18 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "icon": "book-open-cover",
-          "href": "https://mintlify.com/docs"
+          "anchor": "Trade now",
+          "icon": "industry-windows",
+          "color": {
+            "light": "#0d1a36",
+            "dark": "#0d1a36"
+          },
+          "href": "https://www.zentrafi.xyz"
         },
         {
           "anchor": "Blog",
           "icon": "newspaper",
+          "hidden": true,
           "href": "https://mintlify.com/blog"
         }
       ]
@@ -81,6 +86,9 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Overview"
       }
     ]
   },
