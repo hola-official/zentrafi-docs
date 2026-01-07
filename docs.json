@@ -34,11 +34,11 @@
     "tabs": [
       {
         "tab": "Docs",
-        "groups": [
+        "pages": [
+          "index",
           {
             "group": "Getting started",
             "pages": [
-              "index",
               "quickstart",
               "development"
             ]
