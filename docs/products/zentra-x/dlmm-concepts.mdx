@@ -1,0 +1,94 @@
+---
+title: "DLMM concepts"
+description: "Understanding the core concepts behind Dynamic Liquidity Market Maker"
+---
+
+## Concentrated liquidity
+
+DLMM enables LPs to provide liquidity within a specified price range, maximizing capital efficiency.
+
+This is particularly effective for token pairs that trade within tight ranges, such as USDC/USDT ($0.99 - $1.01). Liquidity outside this range remains unused and generates no fees.
+
+By concentrating liquidity within the active trading range, LPs optimize their fee earnings. Only the active bin earns trading fees, while all other bins contain a single token type—either depleted or awaiting use.
+
+## DLMM bin structure
+
+### Bin price
+
+Liquidity is distributed across discrete bins with fixed width and price. Within each bin, liquidity exchanges at a fixed price using the formula `X + Y = k`. You add X tokens and remove Y tokens (or vice versa) until only one token type remains.
+
+Each bin represents a single price point. The difference between consecutive bins is the **bin step**, calculated from basis points set by the pool creator.
+
+**Example**: For SOL/USDC at $20 with a 25 basis point (0.25%) bin step:
+
+- Bin 1: $20.00
+- Bin 2: $20.00 × 1.0025 = $20.05
+- Bin 3: $20.05 × 1.0025 = $20.10
+
+Liquidity pools are identified by their tuple: `(Token X, Token Y, Bin Step S)`
+
+### Bin liquidity
+
+Liquidity in each bin follows the constant sum price variant:
+
+```
+P · x + y = L
+```
+
+Where:
+- `x` = quantity of token X
+- `y` = quantity of token Y
+- `L` = amount of liquidity in the bin
+- `P` = Δy/Δx = price constant unique to each pool
+
+`P` represents the rate of change of Y reserves per change in X reserves—the price constant unique to each pool.
+
+### Bin composition
+
+<Info>
+**Key points:**
+- All bins except the active one contain just one token type (X or Y)
+- Only the active bin earns trading fees
+- `P` represents the slope and remains uniform within every bin
+</Info>
+
+Unlike constant product AMMs where `y = P/x`, price here is independent of reserve amounts. Since reserve composition is independent of both price and liquidity, we use the **composition factor** `c`—the percentage of bin liquidity composed of token Y:
+
+```
+c = y/L
+```
+
+From this, we derive x and y:
+
+```
+y = c · L
+x = L/P · (1 - c)
+```
+
+## Market aggregation
+
+The constant sum curve intercepts both axes, meaning X or Y token reserves can be fully depleted. When this occurs, the current price moves to the next bin (left or right).
+
+### Active price bin
+
+The active price bin contains reserves of both X and Y tokens.
+
+<Warning>
+There can only be **one active bin** at any point in time.
+</Warning>
+
+- All bins to the **left** of the active bin contain only token Y
+- All bins to the **right** of the active bin contain only token X
+
+### Practical example
+
+Consider a SOL/USDC pool where:
+- Asset Y = USDC
+- Asset X = SOL
+- Price P = amount of USDC per SOL
+
+If the $100 SOL bin is the active bin:
+- All bins to the left contain only USDC
+- All bins to the right contain only SOL
+
+When demand for SOL increases significantly, the active bin shifts right as SOL reserves in the $100 bin get exhausted.
