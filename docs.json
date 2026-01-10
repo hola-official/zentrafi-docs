@@ -36,44 +36,66 @@
         "tab": "Docs",
         "pages": [
           "index",
-          "docs/roadmap",
+          {
+            "group": "What is ZentraFi?",
+            "pages": [
+              "docs/what-is-zentra-fi/vision",
+              "docs/why-zentra-fi-exists",
+              "docs/how-launchpad-dlmm-fit-together"
+            ]
+          },
+          {
+            "group": "The ZentraFi Architecture",
+            "pages": [
+              "docs/the-zentra-fi-architecture/zentra-fi-stack",
+              "docs/the-zentra-fi-architecture/core-components"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "docs/products/zentra-x/dynamic-liquidity-market-maker",
+              "docs/core-concepts/dynamic-liquidity-market-maker-dlmm",
+              "docs/products/zentra-x/dlmm-concepts"
+            ]
+          },
+          {
+            "group": "Launch Mechanics",
+            "pages": [
+              "docs/launch-mechanics/adaptive-price-discovery-bonding-curve",
+              "docs/fair-launch-design"
+            ]
+          },
           {
             "group": "The Zentra Ecosystem",
             "pages": [
               {
                 "group": "Zentra App",
                 "pages": [
-                  "docs/products/zentra-app/introduction-to-bounding-curve"
+                  "docs/the-zentra-ecosystem/zentra-app/user-experience-overview",
+                  "docs/the-zentra-ecosystem/zentra-app/trading-and-liquidity-flows"
                 ]
               },
               {
-                "group": "Zentra X",
+                "group": "Zentra DEX (Zentra X)",
                 "pages": [
-                  "docs/products/zentra-x/dlmm-formulas",
-                  "docs/products/zentra-x/introduction-to-dlmm",
-                  "docs/products/zentra-x/dlmm-concepts",
-                  "docs/products/zentra-x/dlmm-formulas"
+                  "docs/the-zentra-ecosystem/zentra-dex-zentra-x/what-it-is",
+                  "docs/the-zentra-ecosystem/zentra-dex-zentra-x/how-it-uses-dlmm"
                 ]
               }
             ]
           },
-          "docs/tokenomics",
           {
-            "group": "Customization",
+            "group": "Governance & Tokenomics",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "docs/governance-and-tokenomics/voting-model-ve-ztr",
+              "docs/governance-and-tokenomics/incentive-direction-gauges",
+              "docs/governance-and-tokenomics/token-utility",
+              "docs/governance-and-tokenomics/emissions-and-fees",
+              "docs/governance-and-tokenomics/value-flow-high-level"
             ]
           },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          }
+          "docs/tokenomics"
         ]
       }
     ]
