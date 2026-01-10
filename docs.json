@@ -49,6 +49,7 @@
               {
                 "group": "Zentra X",
                 "pages": [
+                  "docs/products/zentra-x/dlmm-formulas",
                   "docs/products/zentra-x/introduction-to-dlmm",
                   "docs/products/zentra-x/dlmm-concepts",
                   "docs/products/zentra-x/dlmm-formulas"
