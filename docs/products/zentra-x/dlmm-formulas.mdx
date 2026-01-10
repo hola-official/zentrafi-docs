@@ -1,0 +1,85 @@
+---
+title: "DLMM formulas"
+description: "Mathematical formulas powering the Dynamic Liquidity Market Maker"
+---
+
+DLMM is a concentrated liquidity AMM that uses dynamic fee mechanisms to adjust liquidity based on market conditions.
+
+## Price calculation
+
+### Base price formula
+
+```
+price = (1 + bin_step/BASIS_POINT_MAX)^active_id
+```
+
+Where:
+- `BASIS_POINT_MAX` = 10,000
+- Uses Q64.64 fixed-point arithmetic
+- Example: For `bin_step = 10`, price = `(1.001)^active_id`
+
+### Price impact formulas
+
+**Selling X for Y:**
+
+```
+min_price = spot_price × (BASIS_POINT_MAX - max_price_impact_bps) / BASIS_POINT_MAX
+```
+
+**Selling Y for X:**
+
+```
+min_price = spot_price × BASIS_POINT_MAX / (BASIS_POINT_MAX - max_price_impact_bps)
+```
+
+## Fee calculation
+
+### Total trading fee
+
+```
+total_fee_rate = min(base_fee_rate + variable_fee_rate, MAX_FEE_RATE)
+```
+
+### Base fee formula
+
+```
+base_fee_rate = base_factor × bin_step × 10^base_fee_power_factor
+```
+
+### Variable fee formula
+
+```
+variable_fee_rate = ((volatility_accumulator × bin_step)^2 × variable_fee_control + OFFSET) / SCALE
+```
+
+Where:
+- `OFFSET` = 99,999,999,999
+- `SCALE` = 100,000,000,000
+
+### Composition fee formula
+
+```
+composition_fee = (swap_amount × total_fee_rate × (1 + total_fee_rate)) / FEE_PRECISION^2
+```
+
+Where:
+- `MAX_FEE_RATE` = 100,000,000
+
+## Liquidity and bin math
+
+### Liquidity formula (constant sum)
+
+```
+L = price × x + y
+```
+
+Where:
+- `L` = liquidity
+- `x` and `y` = token amounts
+- Price is in Q64.64 format
+
+### Liquidity share formula
+
+```
+liquidity_share = (in_liquidity × liquidity_supply) / bin_liquidity
+```
