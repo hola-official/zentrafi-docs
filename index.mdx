@@ -1,139 +1,62 @@
 ---
-title: "ZentraFi Protocol"
-description: "The native liquidity infrastructure for Pharos — combining programmable token launches with discretized liquidity markets."
+title: "ZentraFi"
+description: "The native liquidity infrastructure for Pharos"
 ---
 
 <Frame>
   <img src="/images/overview-og.png" alt="ZentraFi Protocol" style={{ borderRadius: '10px' }} />
 </Frame>
 
-## What is ZentraFi?
+## Build with ZentraFi
 
-ZentraFi is a vertically integrated DeFi protocol built natively on **Pharos**. It unifies two critical pieces of on-chain infrastructure:
-
-1. **Zentra App** — A programmable launchpad with adaptive price discovery
-2. **Zentra X** — A discretized liquidity exchange powered by the Liquidity Book model
-
-Together, these components solve a fundamental problem in DeFi: the disconnect between token distribution and market formation.
+ZentraFi combines programmable token launches with discretized liquidity markets on **Pharos**. Launch tokens with adaptive pricing that flows directly into trading pools.
 
 <CardGroup cols={2}>
-  <Card title="For Traders" icon="arrow-right-arrow-left">
-    Execute swaps with predictable pricing. Discretized bins eliminate slippage within price ranges, giving you exact execution on your terms.
+  <Card title="Zentra X" icon="chart-mixed" href="https://x.zentrafi.xyz">
+    **Discretized Liquidity Exchange**
+
+    Zero slippage within bins. Dynamic fees. Concentrated LP positions.
   </Card>
 
-  <Card title="For Liquidity Providers" icon="coins">
-    Deploy capital where it earns. Concentrated positions mean your liquidity works harder, with dynamic fees that scale with volatility.
-  </Card>
+  <Card title="Zentra App" icon="rocket" href="https://app.zentrafi.xyz">
+    **Programmable Launchpad**
 
-  <Card title="For Projects" icon="rocket">
-    Launch with infrastructure, not just a contract. Adaptive pricing feeds directly into functional markets — no separate liquidity bootstrapping required.
-  </Card>
-
-  <Card title="For Builders" icon="code">
-    Composable primitives for on-chain applications. Permissionless pool creation, programmable launch parameters, and transparent fee mechanics.
+    Adaptive price discovery. Automatic liquidity seeding.
   </Card>
 </CardGroup>
 
-## The Problem with Isolated Infrastructure
+## Key Features
 
-Traditional DeFi separates token launches from trading infrastructure:
+- **Zero Slippage**: Trade at exact bin prices
+- **Dynamic Fees**: Adjust automatically with volatility
+- **Launch-to-Trade**: Token sales seed DLMM pools atomically
+- **Concentrated LP**: Deploy capital where trading happens
 
-| Phase | Traditional Approach | What Goes Wrong |
-|-------|---------------------|-----------------|
-| Launch | Fixed-price sale or bonding curve | Bots front-run, retail gets poor fills |
-| Liquidity | Manual LP bootstrapping | Fragmented, often mercenary capital |
-| Trading | Generic AMM listing | Inefficient pricing, high slippage |
-
-This fragmentation creates friction at every step. Projects spend resources on liquidity mining. Traders deal with poor execution. LPs face impermanent loss in poorly designed pools.
-
-## How ZentraFi Works Differently
-
-ZentraFi treats launch and trade as a single continuous flow:
-
-```
-Token Configuration → Adaptive Price Discovery → Liquidity Formation → Discretized Trading
-```
-
-### Launch Phase
-
-Projects configure distribution parameters — supply, pricing curves, duration. Participants buy in through adaptive pricing that responds to demand in real-time. No fixed allocations to game. No cliff unlocks to dump.
-
-### Market Formation
-
-When distribution completes, raised capital doesn't sit idle. It flows directly into Zentra X as concentrated liquidity, seeded into bins around the terminal price. The token has a market from minute one.
-
-### Ongoing Trading
-
-Zentra X handles all subsequent trading through the Liquidity Book model. Price moves discretely across bins. Fees adjust dynamically. LPs earn on active capital, not idle reserves.
-
-## Technical Foundation
-
-ZentraFi's exchange layer implements the **Liquidity Book** model — a discretized approach to automated market making that differs fundamentally from constant-product designs.
-
-### Bin-Based Liquidity
-
-Instead of continuous curves, liquidity exists in discrete price bins. Each bin:
-
-- Holds reserves at a single price point
-- Executes swaps at constant price until depleted
-- Enables zero-slippage trades within the bin
-
-### Dynamic Fee Structure
-
-Fees consist of two components:
-
-$$
-\text{Total Fee} = \text{Base Fee} + \text{Variable Fee}
-$$
-
-The variable component responds to volatility — measured by bin crossings and swap frequency. High activity periods generate higher fees, compensating LPs for increased risk and discouraging extractive behavior.
-
-### Capital Efficiency
-
-Traditional AMMs spread liquidity across infinite price ranges. Most of it sits unused. Liquidity Book concentrates capital where trading actually occurs:
-
-| Metric | Constant Product AMM | Liquidity Book |
-|--------|---------------------|----------------|
-| Active Capital | ~2-5% | Up to 100% |
-| Slippage | Continuous | Zero within bins |
-| Fee Capture | Diluted | Concentrated |
-
-## Protocol Architecture
-
-<Frame>
-  <img src="/images/market-aggregation.avif" alt="Protocol Architecture" style={{ borderRadius: '10px' }} />
-</Frame>
-
-ZentraFi operates across three layers:
-
-**Application Layer**
-- User interfaces for launching, trading, and LP management
-- Wallet integration and transaction signing
-- Real-time market data and position tracking
-
-**Protocol Layer**
-- Launchpad contracts for token distribution
-- Liquidity Book pools for trading
-- Router contracts for optimal execution
-
-**Governance Layer**
-- veZTR voting for emission direction
-- Treasury management through governance proposals
-- Protocol parameter adjustment
-
-## Start Building
+## Quick Start
 
 <CardGroup cols={3}>
-  <Card title="Core Concepts" icon="book" href="/docs/core-concepts/dynamic-liquidity-market-maker-dlmm">
-    Understand the Liquidity Book model and how discretized markets work.
-  </Card>
-
-  <Card title="Launch a Token" icon="rocket" href="/docs/launch-mechanics/adaptive-price-discovery-bonding-curve">
-    Learn how adaptive price discovery creates fair, efficient distributions.
+  <Card title="Trade" icon="arrow-right-arrow-left" href="https://x.zentrafi.xyz">
+    Swap tokens on Zentra X
   </Card>
 
   <Card title="Provide Liquidity" icon="droplet" href="/docs/products/zentra-x/dynamic-liquidity-market-maker">
-    Deploy concentrated positions and earn dynamic fees.
+    Earn fees as an LP
+  </Card>
+
+  <Card title="Launch a Token" icon="rocket" href="/docs/launch-mechanics/adaptive-price-discovery-bonding-curve">
+    Create a fair launch
+  </Card>
+</CardGroup>
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="DLMM Concepts" icon="book" href="/docs/core-concepts/dynamic-liquidity-market-maker-dlmm">
+    How discretized liquidity works
+  </Card>
+
+  <Card title="LP Strategies" icon="chart-pie" href="/docs/products/zentra-x/liquidity-shapes">
+    Spot, Curve, and Bid-Ask shapes
   </Card>
 </CardGroup>
 
@@ -141,8 +64,7 @@ ZentraFi operates across three layers:
 
 | Component | Status |
 |-----------|--------|
-| Zentra X (DEX) | Live |
-| Zentra App (Launchpad) | Live |
+| Zentra X (DEX) | [Live](https://x.zentrafi.xyz) |
+| Zentra App (Launchpad) | [Live](https://app.zentrafi.xyz) |
 | Governance (veZTR) | Q1 2026 |
 | Farming | Q1 2026 |
-| Full Tokenomics | Q1-Q2 2026 |

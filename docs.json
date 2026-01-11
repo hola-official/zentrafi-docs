@@ -18,7 +18,7 @@
             "light": "#0d1a36",
             "dark": "#0d1a36"
           },
-          "href": "https://www.zentrafi.xyz"
+          "href": "https://x.zentrafi.xyz"
         },
         {
           "anchor": "Community",
@@ -54,8 +54,9 @@
           {
             "group": "Core Concepts",
             "pages": [
-              "docs/products/zentra-x/dynamic-liquidity-market-maker",
               "docs/core-concepts/dynamic-liquidity-market-maker-dlmm",
+              "docs/products/zentra-x/dynamic-liquidity-market-maker",
+              "docs/products/zentra-x/liquidity-shapes",
               "docs/products/zentra-x/dlmm-concepts"
             ]
           },
@@ -98,7 +99,7 @@
       }
     ]
   },
-  "logo": "/logo/zentrafi-transparent.svg",
+  "logo": "/logo/ZentraZLogo.png",
   "navbar": {
     "links": [
       {

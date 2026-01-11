@@ -1,66 +1,315 @@
 ---
 title: 'Trading & Liquidity Flows'
-description: 'How tokens move from launch to active trading'
+description: 'How tokens move through the ZentraFi ecosystem'
 ---
 
-## Overview
+## Flow Overview
 
-Zentra App manages the transition from token launch to open market trading.
-
-This page explains how liquidity flows through the system.
-
-## Pre-Launch
-
-- Project configures token and launch parameters
-- Launch is announced and visible to participants
-- No trading occurs during this phase
-
-## During Launch
-
-- Participants contribute to the launch
-- Price adjusts based on demand (bonding curve)
-- Tokens are allocated proportionally
-- Liquidity accumulates for post-launch deployment
-
-## Launch Completion
-
-When the launch ends:
-
-1. Final token price is determined
-2. Tokens are distributed to participants
-3. Liquidity is prepared for Zentra X
-
-## Liquidity Deployment
-
-After launch completion:
-
-- Liquidity is deployed to DLMM pools on Zentra X
-- Bins are configured around the launch price
-- Trading is enabled immediately
-
-## Active Trading
-
-Once live on Zentra X:
-
-- Users can swap tokens freely
-- LPs can add additional liquidity
-- Dynamic fees adjust based on market activity
-- The DLMM engine manages bin liquidity
-
-## Flow Diagram
+ZentraFi creates a continuous flow from token creation to active trading:
 
 ```
-Participants → Launch Pool → Token Distribution
-                    ↓
-              Liquidity Pool
-                    ↓
-              Zentra X (DLMM)
-                    ↓
-              Open Trading
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Creation   │ ──► │    Launch    │ ──► │   Trading    │
+│              │     │              │     │              │
+│  Configure   │     │  Distribute  │     │   Swap on    │
+│  parameters  │     │  via curve   │     │   Zentra X   │
+└──────────────┘     └──────────────┘     └──────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  Liquidity   │
+                     │              │
+                     │  Seed DLMM   │
+                     │    pools     │
+                     └──────────────┘
 ```
 
-## Key Points
+## Token Lifecycle
 
-- No manual liquidity bootstrapping required
-- Seamless transition from launch to trade
-- DLMM ensures efficient price discovery post-launch
+### Phase 1: Creation
+
+Project configures token and launch:
+
+```
+Input:
+├── Token metadata (name, symbol, supply)
+├── Launch parameters (curve, caps, duration)
+├── Allocation breakdown
+└── Liquidity configuration
+
+Output:
+├── Token contract deployed
+├── Launch contract deployed
+└── Launch scheduled/started
+```
+
+### Phase 2: Distribution
+
+Users participate through the bonding curve:
+
+```
+User Journey:
+├── Discover launch on Zentra App
+├── Review parameters and project
+├── Contribute quote tokens (USDC)
+├── Price adjusts based on total demand
+├── Tokens allocated proportionally
+└── Wait for launch completion
+```
+
+**During Distribution:**
+- Price moves along configured curve
+- Each purchase pushes price higher
+- Transparency: all see same price
+- No trading until completion
+
+### Phase 3: Transition
+
+Launch completes and liquidity deploys:
+
+```
+Transition Sequence (Atomic):
+1. Launch state finalizes
+2. Collected funds split:
+   ├── Liquidity portion → DLMM pool
+   └── Project portion → Creator wallet
+3. Token/quote pair forms
+4. Bins populated around terminal price
+5. Pool activates
+```
+
+**Critical:** This happens in a single transaction block. No window for manipulation.
+
+### Phase 4: Trading
+
+Open market on Zentra X:
+
+```
+Market State:
+├── Active DLMM pool
+├── Initial liquidity from launch
+├── Price determined by supply/demand
+├── LPs can add/remove liquidity
+└── Fees accrue to LPs
+```
+
+## Liquidity Mechanics
+
+### Initial Seeding
+
+When launch completes:
+
+**Inputs:**
+- Liquidity allocation % (e.g., 80%)
+- Terminal launch price
+- Bin step configuration
+- Distribution shape
+
+**Process:**
+1. Calculate token/quote amounts for liquidity
+2. Determine active bin from terminal price
+3. Allocate across bins per shape
+4. Deploy to Zentra X factory
+5. Activate pool
+
+**Example:**
+```
+Launch raises: $500,000
+Liquidity allocation: 80%
+Terminal price: $0.05
+
+Liquidity deployment:
+├── Quote side: $400,000 USDC
+├── Token side: 8,000,000 tokens
+├── Active bin: ID 8,388,608 ($0.05)
+├── Bins seeded: ±10 around active
+└── Shape: Concentrated
+```
+
+### Bin Distribution
+
+Initial liquidity uses concentrated distribution:
+
+```
+Bins:    -5   -4   -3   -2   -1    0   +1   +2   +3   +4   +5
+         ▓    ▓▓   ▓▓▓  ▓▓▓▓ ▓▓▓▓▓████▓▓▓▓▓ ▓▓▓▓ ▓▓▓  ▓▓   ▓
+                              ↑
+                         Active Bin
+```
+
+Heavy allocation at active bin provides depth where trading begins. Tapering provides support as price moves.
+
+### Liquidity Evolution
+
+Post-launch, liquidity is dynamic:
+
+**Week 1:**
+- Launch liquidity dominates
+- Limited external LP participation
+- Price discovery phase
+
+**Month 1:**
+- Successful tokens attract external LPs
+- Liquidity depth increases
+- Spreads potentially tighten
+
+**Ongoing:**
+- Market forces determine depth
+- Incentive programs (farming) may boost liquidity
+- veZTR voting directs additional rewards
+
+## Trading Flow
+
+### Swap Execution
+
+User swaps on Zentra X:
+
+```
+1. User: Swap 1000 USDC for TOKEN
+2. Router: Find optimal path through bins
+3. Execution:
+   ├── Bin 0 (active): Provides X tokens at $0.050
+   ├── If needed, Bin 1: Provides Y tokens at $0.051
+   └── Continue until order filled
+4. Settlement:
+   ├── User receives tokens
+   ├── Pool receives USDC
+   └── Fees distributed to LPs
+```
+
+### Price Impact
+
+Trade size determines price impact:
+
+| Trade Size | Bins Crossed | Effective Slippage |
+|------------|--------------|-------------------|
+| Small | 0 | 0% (within active bin) |
+| Medium | 1-3 | Minimal |
+| Large | Many | Increases with size |
+
+### Fee Capture
+
+Fees flow to:
+1. **LPs**: Majority of trading fees
+2. **Protocol**: Small protocol fee (if configured)
+3. **sZTR stakers**: Share of protocol fees
+
+## Value Flows
+
+### From Launch
+
+```
+Launch Raise ($500,000)
+        │
+        ├──► Liquidity (80%): $400,000
+        │         │
+        │         ├──► DLMM Pool (paired with tokens)
+        │         └──► Earns trading fees
+        │
+        └──► Project (20%): $100,000
+                  │
+                  └──► Project treasury/operations
+```
+
+### From Trading
+
+```
+Trading Fee (0.3%)
+        │
+        ├──► LPs (85%): Fee income
+        │
+        └──► Protocol (15%):
+                  │
+                  ├──► sZTR stakers: Revenue share
+                  └──► Treasury: Protocol development
+```
+
+### From Governance
+
+```
+veZTR Votes
+        │
+        ├──► Direct ZTR emissions to pools
+        │
+        └──► Voting rewards from projects
+```
+
+## Participant Journeys
+
+### Trader Journey
+
+```
+Goal: Buy newly launched token
+
+1. Find token on Zentra X (post-launch)
+2. Connect wallet
+3. Enter swap: USDC → TOKEN
+4. Review price and slippage
+5. Execute swap
+6. Receive tokens
+
+Considerations:
+- Check liquidity depth before trading
+- Large orders may require splitting
+- Dynamic fees during volatile periods
+```
+
+### LP Journey
+
+```
+Goal: Earn fees by providing liquidity
+
+1. Navigate to Pools on Zentra X
+2. Find desired pair
+3. Choose liquidity shape
+4. Set bin range
+5. Deposit tokens
+6. Monitor and rebalance as needed
+7. Claim fees periodically
+
+Considerations:
+- Active bin earns fees
+- Impermanent loss risk
+- More concentration = more risk/reward
+```
+
+### Project Journey
+
+```
+Goal: Launch token with immediate liquidity
+
+1. Configure token on Zentra App
+2. Set launch parameters
+3. Deploy launch
+4. Promote and build community
+5. Monitor participation
+6. Launch completes → trading activates
+7. Support ongoing market health
+
+Post-launch responsibilities:
+- Engage LPs
+- Build token utility
+- Consider governance participation
+```
+
+## Integration Points
+
+### For Developers
+
+Key integration points:
+
+| Contract | Purpose | Use Case |
+|----------|---------|----------|
+| LBLaunchpad | Launch creation/participation | Build custom launch interfaces |
+| LBFactory | Pool creation | Create new trading pairs |
+| LBRouter | Swap execution | Integrate swaps into dApps |
+| LBPair | Direct pool interaction | Advanced LP management |
+
+### For Aggregators
+
+Zentra X pools can be:
+- Indexed by aggregators
+- Included in routing
+- Queried for pricing
+
+Standard Liquidity Book interfaces ensure compatibility with ecosystem tooling.

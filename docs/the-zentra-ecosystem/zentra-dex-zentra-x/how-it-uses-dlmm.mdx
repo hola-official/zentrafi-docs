@@ -1,58 +1,369 @@
 ---
-title: 'How It Uses DLMM'
-description: 'How Zentra X leverages Dynamic Liquidity Market Maker technology'
+title: 'DLMM Implementation'
+description: 'Technical details of how Zentra X implements the Liquidity Book model'
 ---
 
-## DLMM in Zentra X
+## Implementation Overview
 
-Zentra X is built entirely on DLMM (Dynamic Liquidity Market Maker) technology.
+Zentra X implements the Liquidity Book (DLMM) model developed by Trader Joe. This page covers the specific implementation details and how they apply to trading on Pharos.
 
-Every pool, every swap, and every liquidity position uses the DLMM engine.
+## Contract Architecture
 
-## Bin-Based Liquidity
+### Core Contracts
 
-Instead of a continuous price curve, Zentra X organizes liquidity into discrete price bins.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        LBRouter                              │
+│  Entry point for swaps and liquidity operations             │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        LBFactory                             │
+│  Creates and registers LBPair contracts                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         LBPair                               │
+│  Individual pool with bin-based liquidity                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         LBToken                              │
+│  Tracks LP shares per bin (ERC-1155 style)                  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-- Each bin represents a specific price point
-- Liquidity providers choose which bins to fill
-- Swaps execute within bins at zero slippage
+### LBFactory
 
-## How Swaps Work
+Manages pool creation and configuration:
 
-1. User initiates a swap
-2. DLMM routes through active bins
-3. Each bin provides liquidity at its fixed price
-4. If a bin is exhausted, the next bin activates
-5. Fees are collected and distributed to LPs
+```solidity
+// Key functions
+function createLBPair(
+    IERC20 tokenX,
+    IERC20 tokenY,
+    uint24 activeId,
+    uint16 binStep
+) external returns (ILBPair pair);
 
-## Dynamic Fee Mechanism
+function setPreset(
+    uint16 binStep,
+    uint16 baseFactor,
+    uint16 filterPeriod,
+    uint16 decayPeriod,
+    uint16 reductionFactor,
+    uint24 variableFeeControl,
+    uint16 protocolShare,
+    uint24 maxVolatilityAccumulator
+) external;
+```
 
-Fees on Zentra X are not static:
+**Responsibilities:**
+- Deploy new LBPair contracts
+- Maintain preset configurations
+- Track all deployed pairs
+- Control protocol parameters
 
-- **Base fee** — Set by pool configuration
-- **Variable fee** — Adjusts based on volatility
+### LBPair
 
-During high volatility (like token launches), fees increase automatically.
+Individual trading pool:
 
-This:
-- Compensates LPs for increased risk
-- Discourages aggressive bot activity
-- Captures more value during peak demand
+```solidity
+// Key state
+uint24 public activeId;           // Current active bin
+uint16 public binStep;            // Price increment per bin
+bytes32 public parameters;        // Fee parameters
+mapping(uint24 => bytes32) bins;  // Bin reserves
 
-## Concentrated Liquidity Benefits
+// Key functions
+function swap(bool swapForY, address to)
+    external returns (bytes32 amountsOut);
 
-LPs on Zentra X can concentrate their capital:
+function mint(
+    address to,
+    bytes32[] calldata liquidityConfigs,
+    address refundTo
+) external returns (
+    bytes32 amountsReceived,
+    bytes32 amountsLeft,
+    uint256[] memory liquidityMinted
+);
 
-- Focus liquidity around current price
-- Earn more fees per dollar deposited
-- Reduce exposure to unused price ranges
+function burn(
+    address from,
+    address to,
+    uint256[] calldata ids,
+    uint256[] calldata amountsToBurn
+) external returns (bytes32[] memory amounts);
+```
 
-## Launch Pool Integration
+### LBToken
 
-For tokens launched on Zentra App:
+Tracks LP ownership per bin:
 
-- DLMM pools are created automatically
-- Initial liquidity is placed in optimal bins
-- Trading activates immediately
+```solidity
+// Similar to ERC-1155 but optimized
+mapping(address => mapping(uint256 => uint256)) balances;
+mapping(uint256 => uint256) totalSupply;
 
-This makes Zentra X the natural trading venue for all Zentra App launches.
+function balanceOf(address account, uint256 id)
+    external view returns (uint256);
+
+function totalSupply(uint256 id)
+    external view returns (uint256);
+```
+
+## Bin Mechanics
+
+### Bin ID System
+
+Bins are identified by uint24 IDs centered around a reference point:
+
+```
+Bin ID:    8388605  8388606  8388607  8388608  8388609  8388610
+Price:     $0.9925  $0.9950  $0.9975  $1.0000  $1.0025  $1.0050
+                                        ↑
+                              Reference (ID 8388608 = 2^23)
+```
+
+### Price Calculation
+
+Price from bin ID:
+
+$$
+P(id) = (1 + s)^{id - 2^{23}}
+$$
+
+Where $s$ is the bin step.
+
+Bin ID from price:
+
+$$
+id = \text{floor}\left(\frac{\log(P)}{\log(1 + s)}\right) + 2^{23}
+$$
+
+### Bin Reserves
+
+Each bin stores reserves in packed format:
+
+```
+bytes32 reserves:
+├── bits 0-127:   reserveX (token X amount)
+└── bits 128-255: reserveY (token Y amount)
+```
+
+## Swap Execution
+
+### Algorithm
+
+```
+function executeSwap(bool swapForY, uint256 amountIn):
+    1. Start at activeId
+    2. While amountIn > 0:
+        a. Get bin reserves
+        b. Calculate max swap in current bin
+        c. Execute partial swap
+        d. Update reserves
+        e. If bin depleted, move activeId
+        f. Accumulate output
+    3. Return total output
+```
+
+### Example Swap
+
+Swap 1000 USDC for TOKEN at active bin 8388608 ($1.00):
+
+```
+Initial State:
+Bin 8388608: 500 TOKEN, 500 USDC
+Bin 8388609: 1000 TOKEN, 0 USDC
+
+Execution:
+1. Bin 8388608: Swap 500 USDC → 500 TOKEN
+   - Bin depleted of TOKEN
+   - activeId moves to 8388609
+2. Bin 8388609: Swap 500 USDC → 498.75 TOKEN (at $1.0025)
+   - Partial fill
+
+Result: 998.75 TOKEN for 1000 USDC
+Average price: $1.00125
+```
+
+## Fee Implementation
+
+### Fee Components
+
+```solidity
+struct FeeParameters {
+    uint16 baseFactor;           // Base fee multiplier
+    uint16 filterPeriod;         // Time filter for volatility
+    uint16 decayPeriod;          // Volatility decay time
+    uint16 reductionFactor;      // Volatility reduction rate
+    uint24 variableFeeControl;   // Variable fee scaling
+    uint16 protocolShare;        // Protocol fee percentage
+    uint24 maxVolatilityAccumulator;  // Cap on variable fee
+}
+```
+
+### Fee Calculation
+
+```
+Base Fee:
+f_b = baseFactor × binStep / 10000
+
+Variable Fee:
+volatilityAccumulator = min(
+    prevAccumulator × reductionFactor + binsCrossed,
+    maxVolatilityAccumulator
+)
+f_v = variableFeeControl × volatilityAccumulator² / 10^24
+
+Total Fee:
+totalFee = f_b + f_v
+```
+
+### Fee Distribution
+
+```
+Trading Fee Collected
+         │
+         ├──► LP Share (1 - protocolShare)
+         │         │
+         │         └──► Distributed to bin LPs
+         │
+         └──► Protocol Share
+                   │
+                   └──► Treasury/sZTR stakers
+```
+
+## Liquidity Operations
+
+### Adding Liquidity
+
+```solidity
+// LiquidityConfig format
+bytes32 liquidityConfig = encode(
+    uint64 distributionX,  // % of X to this bin
+    uint64 distributionY,  // % of Y to this bin
+    uint24 binId           // Target bin
+);
+
+// Example: Add to bins 8388606-8388610
+mint(
+    to: userAddress,
+    liquidityConfigs: [
+        encode(0.1, 0, 8388606),  // 10% of X to bin -2
+        encode(0.2, 0, 8388607),  // 20% of X to bin -1
+        encode(0.4, 0.4, 8388608), // 40% each to active
+        encode(0, 0.3, 8388609),  // 30% of Y to bin +1
+        encode(0, 0.2, 8388610)   // 20% of Y to bin +2
+    ],
+    refundTo: userAddress
+);
+```
+
+### Removing Liquidity
+
+```solidity
+// Burn LP tokens from specific bins
+burn(
+    from: userAddress,
+    to: userAddress,
+    ids: [8388606, 8388607, 8388608, 8388609, 8388610],
+    amountsToBurn: [share1, share2, share3, share4, share5]
+);
+```
+
+## Integration Patterns
+
+### Basic Swap
+
+```solidity
+// Through router
+ILBRouter.swapExactTokensForTokens(
+    amountIn: 1000e6,        // 1000 USDC
+    amountOutMin: 990e18,    // Min 990 TOKEN
+    path: Path({
+        pairBinSteps: [25],  // 25 bps pools
+        versions: [Version.V2],
+        tokenPath: [USDC, TOKEN]
+    }),
+    to: msg.sender,
+    deadline: block.timestamp + 300
+);
+```
+
+### Multi-Hop Swap
+
+```solidity
+// USDC → PHRS → TOKEN
+ILBRouter.swapExactTokensForTokens(
+    amountIn: 1000e6,
+    amountOutMin: 100e18,
+    path: Path({
+        pairBinSteps: [25, 50],
+        versions: [Version.V2, Version.V2],
+        tokenPath: [USDC, PHRS, TOKEN]
+    }),
+    to: msg.sender,
+    deadline: block.timestamp + 300
+);
+```
+
+### Reading Pool State
+
+```solidity
+// Get active bin and reserves
+(uint24 activeId, uint256 reserveX, uint256 reserveY) =
+    pair.getReservesAndId();
+
+// Get price from bin
+uint256 price = pair.getPriceFromId(activeId);
+
+// Get bin reserves
+(uint256 binReserveX, uint256 binReserveY) =
+    pair.getBin(binId);
+```
+
+## Gas Optimization
+
+### Bin Crossing Costs
+
+| Operation | Approximate Gas |
+|-----------|-----------------|
+| Swap (single bin) | ~80,000 |
+| Swap (per additional bin) | ~30,000 |
+| Add liquidity (per bin) | ~50,000 |
+| Remove liquidity (per bin) | ~40,000 |
+
+### Best Practices
+
+1. **Batch operations**: Combine multiple bin operations
+2. **Minimize bin crossings**: Size trades appropriately
+3. **Use router**: Optimized routing and execution
+4. **Monitor gas prices**: Time operations for lower costs
+
+## Security Considerations
+
+### Reentrancy Protection
+
+All state-changing functions use checks-effects-interactions pattern and reentrancy guards.
+
+### Oracle Resistance
+
+Prices derived from bin state, not external oracles. Manipulation requires significant capital.
+
+### Access Control
+
+- Factory: Admin-controlled presets
+- Pairs: Permissionless after creation
+- Router: Permissionless
+
+### Known Limitations
+
+- Large swaps cross many bins (higher cost)
+- Very volatile markets may gap between bins
+- LP positions require active management for optimal returns

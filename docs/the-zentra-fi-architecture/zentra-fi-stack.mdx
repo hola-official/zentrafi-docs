@@ -82,7 +82,7 @@ The protocol layer contains the core smart contracts that implement ZentraFi's f
 
 ### Launchpad Contracts
 
-**LBLaunchpad** — Factory contract for creating and managing token launches.
+**LBLaunchpad**: Factory contract for creating and managing token launches.
 
 ```solidity
 // Simplified interface
@@ -103,13 +103,13 @@ interface ILBLaunchpad {
 ```
 
 **Key Functions:**
-- `createLaunch` — Deploy new launch with specified parameters
-- `participate` — Buy tokens during active launch
-- `finalizeLaunch` — Complete launch and seed liquidity
+- `createLaunch`: Deploy new launch with specified parameters
+- `participate`: Buy tokens during active launch
+- `finalizeLaunch`: Complete launch and seed liquidity
 
 ### Liquidity Book Contracts
 
-**LBFactory** — Registry and factory for liquidity pools.
+**LBFactory**: Registry and factory for liquidity pools.
 
 ```solidity
 interface ILBFactory {
@@ -133,7 +133,7 @@ interface ILBFactory {
 }
 ```
 
-**LBPair** — Individual liquidity pool implementing bin-based trading.
+**LBPair**: Individual liquidity pool implementing bin-based trading.
 
 ```solidity
 interface ILBPair {
@@ -163,7 +163,7 @@ interface ILBPair {
 }
 ```
 
-**LBRouter** — Aggregation and routing for optimal execution.
+**LBRouter**: Aggregation and routing for optimal execution.
 
 ```solidity
 interface ILBRouter {
@@ -257,7 +257,7 @@ All ZentraFi contracts are deployed on Pharos mainnet. Contract addresses are av
 
 ### Contract Security
 
-- Audited by [Audit Firm — TBD]
+- Audited by [Audit Firm: TBD]
 - Bug bounty program active
 - Formal verification on critical paths
 

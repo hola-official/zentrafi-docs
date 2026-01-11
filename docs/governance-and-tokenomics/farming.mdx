@@ -1,73 +1,292 @@
 ---
 title: 'Farming'
-description: 'Earn additional yield on your liquidity through ZentraFi farms'
+description: 'LP reward mechanisms and yield farming on ZentraFi'
 ---
 
 <Info>
-Farming is scheduled to launch in **Q1 2026**.
+Farming launches **Q1 2026**. This documentation describes the planned system.
 </Info>
 
 ## Overview
 
-Farming on ZentraFi allows you to generate additional yield on your pooled liquidity.
+Farming on ZentraFi allows liquidity providers to earn additional ZTR rewards beyond trading fees.
 
-Certain liquidity pools receive farm reward emissions governed by ZTR stakers through veZTR voting, making yields dynamic based on voting activity.
+Emissions are directed by veZTR governance, creating a dynamic system where reward rates reflect community priorities.
 
 ## How Farming Works
 
-### Step 1: Provide Liquidity
+### The Reward Flow
 
-1. Deposit tokens into a liquidity pool on Zentra X
-2. Receive LP (liquidity provider) tokens as a receipt
-3. These LP tokens represent your share of the pool
+```
+ZTR Emissions
+      │
+      ▼
+Gauge Controller ◄─── veZTR Votes
+      │
+      ▼
+Pool Farms
+      │
+      ▼
+LP Stakers
+```
 
-### Step 2: Stake LP Tokens
+1. Protocol emits ZTR on a schedule
+2. veZTR holders vote on emission allocation
+3. Gauges direct rewards to voted pools
+4. LPs who stake in farms receive rewards
 
-1. Navigate to the Farm page
-2. Locate your desired farm
-3. Enter the LP token amount you wish to stake
-4. Approve and confirm the transaction
+### Two Farming Models
 
-### Step 3: Earn Rewards
+#### Standard Farms (AMM Pools)
 
-- Rewards accrue automatically while staked
-- Claim rewards at any time
-- Rewards are added directly to your wallet
+For classic liquidity pools:
 
-## Unstaking
+```
+Provide Liquidity → Receive LP Tokens → Stake LP Tokens → Earn ZTR
+```
 
-1. Use the Unstake tab to select your LP token amount
-2. Confirm the transaction in your wallet
-3. Visit the pool page to withdraw your original tokens from liquidity
+- Stake LP tokens in farm contract
+- Rewards accrue while staked
+- Claim anytime
 
-## Key Features
+#### DLMM Farms (Liquidity Book)
 
-- **Dynamic emissions** — Reward rates change based on veZTR voting
-- **No lock-ups** — Stake or unstake at any time
-- **Flexible claiming** — Harvest rewards whenever you want
-- **Multiple farms** — Manage positions across different pools
+For DLMM positions:
 
-## Farm Rewards
+```
+Provide Liquidity → Liquidity Active in Range → Earn ZTR Automatically
+```
 
-Farm emissions are directed by veZTR holders through the gauge voting system.
+- No separate staking required
+- Rewards stream to active liquidity
+- Only in-range positions earn
 
-Pools with more votes receive higher ZTR emissions, creating an incentive for:
+<Info>
+DLMM farming rewards active capital: liquidity must be within the trading range to earn.
+</Info>
 
-- Projects to attract votes to their pools
-- LPs to stake in high-emission farms
-- veZTR holders to participate in governance
+## Farm Mechanics
+
+### Reward Calculation
+
+For standard farms:
+
+$$
+\text{Your Rewards} = \frac{\text{Your LP Stake}}{\text{Total LP Staked}} \times \text{Farm Emissions}
+$$
+
+For DLMM farms:
+
+$$
+\text{Your Rewards} = \frac{\text{Your Active Liquidity}}{\text{Total Active Liquidity}} \times \text{Farm Emissions}
+$$
+
+### Emission Schedule
+
+Emissions follow a schedule determined by:
+- Total ZTR allocated to farming
+- Duration of emission period
+- Gauge-voted distribution
+
+Rates can vary as:
+- Votes shift between pools
+- Total staked liquidity changes
+- Emission schedule progresses
+
+### APR Dynamics
+
+Farm APRs fluctuate based on:
+
+| Factor | APR Impact |
+|--------|------------|
+| More votes for pool | ↑ Higher emissions |
+| More LPs join farm | ↓ Diluted rewards |
+| ZTR price increase | ↑ Higher USD value |
+| Total emissions decrease | ↓ Less ZTR available |
 
 <Warning>
-Farm APRs fluctuate based on voting activity and total staked liquidity. Past performance does not guarantee future returns.
+Displayed APRs are estimates based on current conditions. Actual returns may vary.
 </Warning>
 
-## DLMM Farms
+## Participating in Farms
 
-For Liquidity Book (DLMM) pools, rewards work differently:
+### Standard Farm Flow
 
-- No need to stake LP tokens separately
-- ZTR rewards accrue automatically when liquidity is in range
-- Rewards are claimable at any time
-- Only active liquidity (within the price range) earns rewards
+**Step 1: Provide Liquidity**
+1. Navigate to Pools on Zentra X
+2. Add liquidity to desired pool
+3. Receive LP tokens
 
-This makes DLMM farming more capital efficient — you earn rewards only when your liquidity is actually being used.
+**Step 2: Stake LP Tokens**
+1. Navigate to Farms
+2. Find your pool's farm
+3. Enter LP token amount
+4. Approve and stake
+
+**Step 3: Earn and Claim**
+1. Rewards accrue automatically
+2. View pending rewards anytime
+3. Claim when desired
+4. Rewards sent to wallet
+
+**Step 4: Unstake (when ready)**
+1. Navigate to farm
+2. Enter unstake amount
+3. Confirm transaction
+4. LP tokens returned
+
+### DLMM Farm Flow
+
+**Step 1: Provide DLMM Liquidity**
+1. Add liquidity to DLMM pool
+2. Choose bins and shape
+3. Confirm position
+
+**Step 2: Automatic Rewards**
+- If pool has active farming rewards
+- And your liquidity is in range
+- Rewards accrue automatically
+
+**Step 3: Claim**
+1. Navigate to position
+2. View pending rewards
+3. Claim to wallet
+
+<Info>
+DLMM positions don't need separate staking. Rewards flow to eligible positions automatically.
+</Info>
+
+## Farm Selection
+
+### Finding Farms
+
+Farms page displays:
+- Active farms with rewards
+- Total value locked (TVL)
+- Current APR estimate
+- Required LP tokens
+
+### Evaluating Farms
+
+Consider these factors:
+
+| Factor | What to Check |
+|--------|---------------|
+| APR | Current estimated return |
+| TVL | How much is staked |
+| Gauge weight | Vote allocation |
+| Trading volume | Fee income potential |
+| IL risk | Token pair volatility |
+
+### Risk Considerations
+
+**Impermanent Loss:**
+Farming rewards may not offset IL in volatile pairs.
+
+**APR Volatility:**
+Rates change as conditions change.
+
+**Smart Contract Risk:**
+Farms involve additional contract interactions.
+
+**Opportunity Cost:**
+Staked LP tokens can't be used elsewhere.
+
+## DLMM-Specific Mechanics
+
+### Active Range Requirement
+
+Only active liquidity earns farm rewards:
+
+```
+Bins:    [-5][-4][-3][-2][-1][0][+1][+2][+3][+4][+5]
+                              ↑
+                         Active Bin
+
+Earning: [ ][ ][ ][✓][✓][✓][✓][✓][ ][ ][ ]
+         Out of range | In Range | Out of range
+```
+
+### Reward Distribution
+
+Rewards distribute proportionally among active LPs:
+
+```
+Active Liquidity Distribution:
+├── LP A: 40% of active → 40% of rewards
+├── LP B: 35% of active → 35% of rewards
+└── LP C: 25% of active → 25% of rewards
+```
+
+### Concentration Strategy
+
+More concentrated positions:
+- Higher share when in range
+- Zero rewards when out of range
+- Trade-off between consistency and intensity
+
+## Boosted Farms
+
+### Boost Mechanism
+
+Some farms offer boosted rewards for governance participants:
+
+$$
+\text{Boosted Rewards} = \text{Base Rewards} \times \text{Boost Multiplier}
+$$
+
+Boost depends on:
+- Your veZTR balance
+- Your LP stake
+- Boost formula parameters
+
+### Calculating Boost
+
+Typical boost formula:
+
+$$
+\text{Boost} = \min\left(\frac{\text{veZTR}}{\text{Total veZTR}} \times \text{LP Stake} \times k, \text{Max Boost}\right)
+$$
+
+Higher veZTR = higher potential boost.
+
+## Farming Strategies
+
+### Passive Farming
+
+For hands-off approach:
+- Choose stable pairs (lower IL)
+- Use wider DLMM ranges
+- Accept moderate APRs
+- Rebalance occasionally
+
+### Active Farming
+
+For higher returns:
+- Monitor gauge votes
+- Move to highest-APR farms
+- Manage DLMM positions actively
+- Stack voting rewards
+
+### Governance-Integrated Farming
+
+Maximum yield strategy:
+- Stake ZTR for veZTR
+- Vote for pools you LP in
+- Collect sZTR revenue share
+- Earn farming rewards
+- Claim voting rewards
+
+## Common Questions
+
+**Q: Do I lose rewards if I unstake?**
+A: Pending rewards are claimed when you unstake. No rewards are lost.
+
+**Q: Can I farm multiple pools?**
+A: Yes. Each farm is independent.
+
+**Q: Why did my APR change?**
+A: APRs fluctuate with votes, TVL, and emissions.
+
+**Q: How often should I claim?**
+A: Depends on gas costs vs. reward size. Batch claims for efficiency.

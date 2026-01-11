@@ -1,98 +1,239 @@
 ---
 title: 'Tokenomics'
-description: 'ZTR token utility, distribution, and economic model'
+description: 'ZTR token utility, economics, and value flows'
 ---
 
 <Info>
-Full tokenomics details will be published in **Q1-Q2 2026**.
+Full tokenomics details launch **Q1-Q2 2026**. This page describes the planned economic model.
 </Info>
 
 ## ZTR Token
 
-ZTR is the native token of the ZentraFi protocol.
+ZTR is ZentraFi's native protocol token.
 
-**Chain:** Pharos
-**Token Type:** Governance & Utility
+| Property | Value |
+|----------|-------|
+| Name | Zentra |
+| Symbol | ZTR |
+| Chain | Pharos |
+| Standard | ERC-20 |
 
 ## Token Utility
 
-The ZTR token serves multiple functions within the ecosystem:
+ZTR has three primary functions within the protocol:
 
-### Governance
+### 1. Governance
 
-- Stake ZTR to accrue veZTR voting power
-- Direct protocol emissions to liquidity pools
-- Vote on protocol parameters and treasury usage
+Stake ZTR to participate in protocol governance:
 
-### Revenue Sharing
+- Accrue veZTR voting power
+- Direct liquidity emissions
+- Vote on protocol parameters
+- Influence treasury decisions
 
-- Stake ZTR to earn sZTR rewards
-- Receive share of protocol trading fees
-- Real yield from actual platform activity
+### 2. Revenue Sharing
 
-### Liquidity Incentives
+Stakers earn sZTR: a share of protocol revenue:
 
-- Farm rewards distributed in ZTR
-- DLMM incentives for active liquidity
-- Voting rewards for governance participants
+- Trading fees from Zentra X
+- Launch fees from Zentra App
+- Protocol fees (where applicable)
 
-## Value Flow
+This creates real yield from actual protocol activity.
+
+### 3. Incentive Alignment
+
+ZTR aligns ecosystem participants:
+
+- LPs earn ZTR for providing liquidity
+- Projects can use voting rewards
+- Long-term stakers have more influence
+- Active participation is rewarded
+
+## Value Flows
+
+### Revenue Generation
 
 ```
-Trading Fees
-     ↓
+Protocol Activity
+       │
+       ├──► Trading Volume (Zentra X)
+       │         │
+       │         └──► Trading Fees
+       │
+       └──► Launch Volume (Zentra App)
+                 │
+                 └──► Launch Fees
+```
+
+### Revenue Distribution
+
+```
 Protocol Revenue
-     ↓
-   ┌─────────────────┐
-   │   Distribution  │
-   └─────────────────┘
-     ↓           ↓
-  sZTR        Treasury
- Stakers      (Governance)
+       │
+       ├──► LP Share (~80-85%)
+       │         │
+       │         └──► Liquidity providers
+       │
+       └──► Protocol Share (~15-20%)
+                 │
+                 ├──► sZTR Stakers: Revenue share
+                 └──► Treasury: Development, grants
 ```
+
+### Incentive Flow
+
+```
+ZTR Emissions
+       │
+       ├──► Gauge-Voted Pools
+       │         │
+       │         └──► LP Farming Rewards
+       │
+       └──► Staking Rewards
+                 │
+                 └──► sZTR Distribution
+```
+
+## Economic Model
 
 ### Fee Structure
 
-Zentra X collects trading fees from all swaps:
+#### Zentra X Trading Fees
 
-- **DLMM Pools:** Dynamic fees (0.02% - 2%+ during volatility)
-- **Standard Pools:** Fixed percentage fees
+| Pool Type | Base Fee | Variable Fee |
+|-----------|----------|--------------|
+| Stable | 0.02-0.05% | Low |
+| Standard | 0.1-0.3% | Medium |
+| Volatile | 0.3-0.8% | High |
 
-A portion of fees goes to:
+Variable fees increase with volatility (surge pricing).
 
-- Liquidity providers (majority)
-- Protocol treasury
-- sZTR stakers (revenue share)
+#### Protocol Fee Share
 
-## Emission Model
+A portion of trading fees flows to the protocol:
 
-ZTR emissions are distributed over a defined period:
+- Configurable by governance
+- Typically 10-20% of LP fees
+- Distributed to sZTR stakers and treasury
 
-- **Liquidity Mining:** Rewards for LP stakers
-- **Staking Rewards:** sZTR distributions
-- **Ecosystem Growth:** Treasury-funded initiatives
+#### Launch Fees
 
-Emissions are directed by veZTR holders through gauge voting.
+Token launches may include:
+- Platform fee on raise
+- Configurable by launch creator
+- Flows to protocol treasury
+
+### Emission Model
+
+ZTR emissions fund liquidity incentives:
+
+```
+Total Emissions
+       │
+       ├──► Liquidity Mining (largest portion)
+       │
+       ├──► Staking Rewards
+       │
+       └──► Ecosystem/Treasury
+```
+
+**Emission Schedule:**
+- Defined total allocation
+- Distributed over emission period
+- Rate may decay over time
+- Governance-adjustable parameters
+
+### Sustainability Mechanics
+
+The model is designed for long-term sustainability:
+
+**Real Yield Foundation:**
+- Revenue comes from actual trading activity
+- Not dependent on token emissions
+- Scales with protocol usage
+
+**Emission Efficiency:**
+- Gauge voting directs emissions productively
+- Unproductive pools lose rewards
+- Market determines optimal allocation
+
+**Alignment Mechanisms:**
+- veZTR rewards long-term commitment
+- Unstaking penalty (veZTR reset) discourages mercenary behavior
+- Voting rewards create positive-sum games
+
+## Token Distribution
 
 <Warning>
-Emission rates and allocations are subject to governance decisions. Details will be finalized before launch.
+Exact distribution will be published before launch. Below is indicative structure.
 </Warning>
 
-## Economic Principles
+### Allocation Categories
 
-ZentraFi tokenomics are designed around:
+| Category | Purpose |
+|----------|---------|
+| Liquidity Mining | LP incentives |
+| Ecosystem/Treasury | Grants, development |
+| Team | Core contributors |
+| Early Supporters | Seed, strategic |
+| Community | Airdrops, rewards |
 
-- **Real yield** — Revenue from actual trading activity, not just emissions
-- **Long-term alignment** — veZTR mechanics reward committed participants
-- **Capital efficiency** — DLMM ensures liquidity is used productively
-- **Sustainability** — Fee capture creates ongoing value for token holders
+### Vesting
+
+- Team and investor tokens: Multi-year vesting with cliff
+- Liquidity mining: Distributed over emission period
+- Community: Various schedules per program
+
+## Economic Participation
+
+### For Token Holders
+
+**Passive:**
+- Hold ZTR
+- Benefit from potential appreciation
+- No direct protocol participation
+
+**Active:**
+- Stake ZTR for sZTR + veZTR
+- Earn revenue share
+- Vote on emissions
+- Maximize yield through governance participation
+
+### For LPs
+
+**Basic:**
+- Provide liquidity
+- Earn trading fees
+- Farm ZTR rewards
+
+**Optimized:**
+- Stake ZTR for veZTR
+- Vote for your pools
+- Earn boosted rewards
+- Collect voting rewards
+
+### For Projects
+
+**Launch:**
+- Use Zentra App for token distribution
+- Automatic liquidity on Zentra X
+- Access to incentive programs
+
+**Grow:**
+- Create voting reward pools
+- Attract liquidity through bribes
+- Build sustainable markets
 
 ## Coming Soon
 
 Full tokenomics documentation will include:
 
-- Total supply and distribution breakdown
-- Vesting schedules
-- Emission curves
-- Treasury allocation
-- Governance thresholds
+- [ ] Total supply
+- [ ] Detailed allocation breakdown
+- [ ] Complete vesting schedules
+- [ ] Emission curves
+- [ ] Initial circulating supply
+- [ ] Contract addresses
+
+Subscribe to announcements for updates as launch approaches.

@@ -20,9 +20,9 @@ The launchpad enables projects to distribute tokens through adaptive pricing mec
 
 ### Design Goals
 
-1. **Fair Distribution** — Prevent bots and insiders from capturing disproportionate allocations
-2. **Price Discovery** — Find market-clearing prices organically
-3. **Liquidity Integration** — Seed trading markets automatically
+1. **Fair Distribution**: Prevent bots and insiders from capturing disproportionate allocations
+2. **Price Discovery**: Find market-clearing prices organically
+3. **Liquidity Integration**: Seed trading markets automatically
 
 ### Adaptive Pricing Model
 
@@ -76,7 +76,7 @@ When a launch completes:
 
 ## Liquidity Book
 
-The Liquidity Book is ZentraFi's core trading infrastructure — a discretized AMM that organizes liquidity into price bins.
+The Liquidity Book is ZentraFi's core trading infrastructure: a discretized AMM that organizes liquidity into price bins.
 
 ### Why Discretization?
 
@@ -86,7 +86,7 @@ $$
 x \cdot y = k
 $$
 
-This spreads liquidity across infinite prices. A token at $1 has liquidity at $0.001 and $1000 — completely useless capital.
+This spreads liquidity across infinite prices. A token at $1 has liquidity at $0.001 and $1000: completely useless capital.
 
 Liquidity Book discretizes into bins:
 

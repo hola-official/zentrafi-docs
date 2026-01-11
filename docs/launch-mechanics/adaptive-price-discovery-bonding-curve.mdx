@@ -1,32 +1,286 @@
 ---
-title: 'Adaptive Price Discovery (Bonding Curve)'
-description: 'How ZentraFi uses adaptive pricing for fair token launches'
+title: 'Adaptive Price Discovery'
+description: 'How bonding curves enable fair, transparent token distribution'
 ---
 
-## Launch Lifecycle
+## The Price Discovery Problem
 
-1. Project configures launch parameters
-2. Users participate in token distribution
-3. Price adjusts dynamically based on demand
-4. Launch completes and liquidity is created
-5. Token becomes tradable on Zentra X
+Traditional token launches fail in predictable ways:
 
-This creates a smooth transition from launch to open trading.
+| Launch Type | Problem |
+|-------------|---------|
+| Fixed price | Bots front-run, insiders get allocations |
+| First-come-first-served | Gas wars, failed transactions |
+| Whitelist | Centralized, excludes most participants |
+| Dutch auction | Complex, often ends at floor price |
 
-## Why Adaptive Pricing?
+The common failure: **price is set before demand is known**.
 
-Fixed-price launches often lead to:
+When launch price doesn't reflect actual demand, someone captures the difference: usually bots, insiders, or early flippers rather than genuine participants.
 
-- Bots dominating allocation
-- Immediate price spikes
-- Rapid sell-offs
+## Adaptive Pricing
 
-Adaptive pricing responds to real participation levels.
+ZentraFi's launchpad uses **adaptive price discovery**: the price responds to demand in real-time throughout the launch.
 
-## Price Dynamics
+### Core Mechanism
 
-- Early participation starts at a lower price
-- Increased demand pushes the price upward
-- The final price reflects actual interest
+$$
+P(t) = P_0 \cdot f(S(t))
+$$
 
-This improves fairness and stability.
+Where:
+- $P(t)$ = Current price
+- $P_0$ = Starting price
+- $S(t)$ = Tokens sold so far
+- $f$ = Pricing function
+
+As more tokens sell, price increases. Early participants get better prices, but late participants aren't excluded: they simply pay market-discovered prices.
+
+### Why This Works
+
+**No fixed allocations to game:**
+Everyone buys at the current price. No racing to claim spots.
+
+**Real-time price discovery:**
+Final price reflects actual demand, not team estimates.
+
+**Continuous participation:**
+Buy anytime during the launch at the current price.
+
+**Bot resistance:**
+No advantage to speed: only to price tolerance.
+
+## Bonding Curve Types
+
+### Linear Curve
+
+$$
+P(S) = P_0 + k \cdot S
+$$
+
+Price increases by fixed amount per token sold.
+
+```
+Price
+  │        ╱
+  │      ╱
+  │    ╱
+  │  ╱
+  │╱
+  └─────────── Tokens Sold
+```
+
+**Characteristics:**
+- Predictable price increase
+- Moderate early advantage
+- Simple to understand
+
+**Best for:** Community tokens, fair launches
+
+### Exponential Curve
+
+$$
+P(S) = P_0 \cdot e^{k \cdot S}
+$$
+
+Price increases faster as more tokens sell.
+
+```
+Price
+  │           │
+  │          ╱
+  │        ╱
+  │      ╱
+  │____╱
+  └─────────── Tokens Sold
+```
+
+**Characteristics:**
+- Strong early participant advantage
+- Rapid price acceleration
+- Natural supply scarcity
+
+**Best for:** High-demand launches, price discovery focus
+
+### Sigmoid Curve
+
+$$
+P(S) = P_0 + \frac{L}{1 + e^{-k(S - S_0)}}
+$$
+
+S-shaped curve with slow start, rapid middle, and plateau.
+
+```
+Price
+  │         ____
+  │       ╱
+  │     ╱
+  │   ╱
+  │__╱
+  └─────────── Tokens Sold
+```
+
+**Characteristics:**
+- Gentle start encourages early participation
+- Rapid discovery phase in middle
+- Price ceiling prevents extreme costs
+
+**Best for:** Balanced launches, controlled price ranges
+
+## Launch Configuration
+
+### Parameters
+
+| Parameter | Description | Impact |
+|-----------|-------------|--------|
+| `startPrice` | Initial token price | Floor for all purchases |
+| `curveType` | Linear/Exponential/Sigmoid | Price behavior |
+| `curveParameter` | Steepness factor | How fast price rises |
+| `softCap` | Minimum raise target | Launch validity threshold |
+| `hardCap` | Maximum raise amount | Launch completion trigger |
+| `duration` | Launch window | Time available to participate |
+| `liquidityAllocation` | % to seed pools | Post-launch market depth |
+
+### Example Configuration
+
+```
+Token: PROJECT
+Curve: Exponential
+Start Price: $0.001
+Curve Parameter: 0.00001
+Soft Cap: $50,000
+Hard Cap: $500,000
+Duration: 48 hours
+Liquidity: 80%
+```
+
+**Expected behavior:**
+- First 10% of tokens: ~$0.001-0.002
+- Middle 50%: ~$0.002-0.01
+- Final 10%: ~$0.01-0.05+
+
+## Participation Flow
+
+### For Participants
+
+1. **Connect wallet** to Zentra App
+2. **Review launch details**: curve, caps, allocation
+3. **Enter participation amount** in quote token (e.g., USDC)
+4. **See estimated tokens** based on current price
+5. **Confirm transaction**
+6. **Receive tokens** when launch finalizes
+
+### Price Execution
+
+Your purchase executes along the curve:
+
+**Small purchase:** Mostly at displayed price
+**Large purchase:** Averages across price increase
+
+$$
+\text{Tokens Received} = \int_{S_0}^{S_1} \frac{1}{P(S)} dS
+$$
+
+Where $S_0$ is tokens sold before your purchase, $S_1$ is after.
+
+### Example Purchase
+
+Launch state: 1M tokens sold at $0.005 current price
+
+You buy with $1,000:
+
+| Tokens Bought | Avg Price | Cost |
+|---------------|-----------|------|
+| 0-50,000 | $0.0050 | $250 |
+| 50,000-100,000 | $0.0052 | $260 |
+| 100,000-150,000 | $0.0054 | $270 |
+| 150,000-180,000 | $0.0056 | $220 |
+
+**Result:** 180,000 tokens for $1,000 = $0.00556 average
+
+## Launch Outcomes
+
+### Successful Launch (Hard Cap)
+
+When hard cap is reached:
+1. Launch closes immediately
+2. Token distribution finalizes
+3. Liquidity seeds to Zentra X
+4. Trading activates
+
+### Successful Launch (Duration)
+
+When duration expires above soft cap:
+1. Launch closes at expiry
+2. Unsold tokens handled per configuration
+3. Distribution and liquidity proceed
+
+### Failed Launch (Below Soft Cap)
+
+If soft cap isn't reached:
+1. Launch marked as failed
+2. Participants can claim refunds
+3. No tokens distributed
+
+## Anti-Gaming Mechanisms
+
+### No Speed Advantage
+
+Adaptive pricing removes first-mover advantages:
+- Price is the same for everyone at any moment
+- No benefit to faster transactions
+- Gas optimization doesn't help
+
+### Continuous Clearing
+
+Unlike batch auctions, prices clear continuously:
+- No hidden order books
+- Transparent current price
+- Immediate execution certainty
+
+### Economic Alignment
+
+The curve creates natural incentives:
+- Early = lower price, but less information
+- Late = higher price, but proven demand
+- Manipulation = buy your own curve higher
+
+## Integration with DLMM
+
+### Liquidity Seeding
+
+When launch completes:
+
+1. **Calculate terminal price** from curve endpoint
+2. **Allocate liquidity portion** (e.g., 80% of raise)
+3. **Determine active bin** matching terminal price
+4. **Distribute across bins** per configured shape
+5. **Activate pool** on Zentra X
+
+### Price Continuity
+
+The terminal launch price becomes the initial trading price:
+
+$$
+\text{Initial Active Bin} = \text{floor}\left(\frac{\log(P_{terminal})}{\log(1 + s)}\right)
+$$
+
+No gap between launch price and first trade price.
+
+### Liquidity Shape
+
+Initial liquidity typically uses concentrated distribution:
+- Heavy allocation at terminal price bin
+- Tapering allocation in adjacent bins
+- Supports immediate trading depth
+
+## Comparison to Alternatives
+
+| Mechanism | Price Discovery | Fairness | Complexity |
+|-----------|-----------------|----------|------------|
+| Fixed Price | None | Low | Low |
+| Dutch Auction | Batch | Medium | Medium |
+| Adaptive Curve | Continuous | High | Medium |
+| Open Market | Post-launch | Variable | Low |
+
+Adaptive curves combine real-time discovery with participation fairness: the price you see is the price you get, adjusted for your impact on the curve.

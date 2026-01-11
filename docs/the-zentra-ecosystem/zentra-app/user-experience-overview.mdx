@@ -1,53 +1,238 @@
 ---
-title: 'User Experience Overview'
-description: 'How users interact with the Zentra App launchpad'
+title: 'Zentra App'
+description: 'User guide for the ZentraFi launchpad interface'
 ---
 
 ## What is Zentra App?
 
-Zentra App is ZentraFi's token launchpad — a no-code platform for launching tokens on Pharos.
+Zentra App is ZentraFi's token launchpad interface: where projects create launches and users participate in token distributions.
 
-It provides a streamlined interface for both project creators and participants.
+Unlike traditional launchpads that require technical setup and manual liquidity bootstrapping, Zentra App handles everything through a streamlined interface.
 
-## For Project Creators
+## Interface Overview
 
-### Launch Configuration
+### Home Dashboard
 
-- Set token parameters (supply, name, symbol)
-- Choose launch type (fair launch, bonding curve)
-- Configure pricing and distribution rules
-- Define liquidity allocation
+The main dashboard displays:
 
-### Launch Management
+- **Active Launches**: Currently running token distributions
+- **Upcoming Launches**: Scheduled launches with countdown timers
+- **Completed Launches**: Past launches with performance data
+- **Your Participation**: Launches you've joined and tokens to claim
 
-- Monitor participation in real-time
-- Track price discovery progress
-- View post-launch analytics
+### Launch Cards
+
+Each launch displays key information:
+
+```
+┌─────────────────────────────────────────┐
+│  PROJECT TOKEN                    Live  │
+│  ─────────────────────────────────────  │
+│  Price: $0.0052      Progress: 67%      │
+│  Raised: $335,000    Target: $500,000   │
+│  ─────────────────────────────────────  │
+│  Curve: Exponential   Ends: 12h 34m     │
+│  Liquidity: 80%                         │
+│                                         │
+│  [View Details]        [Participate]    │
+└─────────────────────────────────────────┘
+```
 
 ## For Participants
 
-### Discovering Launches
+### Finding Launches
 
-- Browse upcoming and active launches
-- View project details and tokenomics
-- Check participation requirements
+**Browse Active Launches:**
+1. Navigate to "Launches" tab
+2. Filter by status (Active/Upcoming/Completed)
+3. Sort by raise amount, time remaining, or price
 
-### Participating
+**Launch Details Page:**
+- Token information (name, symbol, supply)
+- Curve parameters and visualization
+- Cap structure (soft/hard caps)
+- Team and project information
+- Contract addresses
 
-- Connect wallet
-- Choose contribution amount
-- Confirm transaction
-- Receive tokens after launch completes
+### Participating in a Launch
+
+**Step 1: Review Launch Details**
+
+Before participating, verify:
+- [ ] Curve type and parameters
+- [ ] Liquidity allocation percentage
+- [ ] Time remaining
+- [ ] Current price vs. start price
+- [ ] Project legitimacy
+
+**Step 2: Connect Wallet**
+
+Supported wallets:
+- MetaMask
+- WalletConnect
+- Coinbase Wallet
+- Other EVM-compatible wallets
+
+**Step 3: Enter Amount**
+
+- Input participation amount in quote token (usually USDC)
+- Review estimated tokens at current price
+- Note: Final tokens may vary as price changes with your purchase
+
+**Step 4: Confirm Transaction**
+
+- Approve token spending (first time only)
+- Confirm participation transaction
+- Wait for confirmation
+
+**Step 5: Track Position**
+
+After participation:
+- View your contribution amount
+- See estimated token allocation
+- Monitor launch progress
+
+### Claiming Tokens
+
+When launch completes:
+
+1. Navigate to "Your Launches" or launch page
+2. Click "Claim Tokens"
+3. Confirm transaction
+4. Tokens arrive in your wallet
+
+<Info>
+Token claims are available immediately after launch finalization. No vesting or lockups unless specified by the project.
+</Info>
+
+### Refunds (Failed Launches)
+
+If a launch doesn't reach soft cap:
+
+1. Launch marked as "Failed"
+2. Navigate to the launch page
+3. Click "Claim Refund"
+4. Receive full contribution back
+
+## For Project Creators
+
+### Creating a Launch
+
+**Step 1: Configure Token**
+
+```
+Token Name: [Project Token]
+Symbol: [PROJ]
+Total Supply: [1,000,000,000]
+Decimals: [18]
+```
+
+**Step 2: Set Launch Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| Start Price | Initial price on curve |
+| Curve Type | Linear/Exponential/Sigmoid |
+| Curve Parameter | Steepness factor |
+| Soft Cap | Minimum raise for success |
+| Hard Cap | Maximum raise amount |
+| Duration | Launch window length |
+| Liquidity % | Portion seeded to DEX |
+
+**Step 3: Configure Allocation**
+
+Define how tokens are distributed:
+- Launch allocation (sold via curve)
+- Liquidity allocation (paired with raise)
+- Team allocation (if any, with vesting)
+- Reserve allocation (treasury, etc.)
+
+**Step 4: Review and Deploy**
+
+- Preview launch page
+- Verify all parameters
+- Deploy launch contract
+- Schedule start time
+
+### Managing Active Launches
+
+During a launch, creators can:
+
+- Monitor participation metrics
+- View real-time price
+- Track progress toward caps
+- Communicate with participants (external)
+
+<Warning>
+Launch parameters cannot be changed after deployment. Verify everything before going live.
+</Warning>
 
 ### Post-Launch
 
-- Trade tokens on Zentra X
-- Provide liquidity to earn fees
-- Track portfolio performance
+After completion:
 
-## Design Principles
+1. **Automatic liquidity seeding**: Configured % flows to Zentra X
+2. **Token distribution**: Participants can claim
+3. **Trading activation**: Pool goes live
+4. **Analytics access**: View final metrics
 
-- **Simplicity** — No technical knowledge required
-- **Transparency** — All parameters visible before participation
-- **Fairness** — Adaptive pricing reduces manipulation
-- **Integration** — Direct connection to Zentra X trading
+## Interface Features
+
+### Price Visualization
+
+Real-time curve visualization shows:
+- Current position on curve
+- Tokens sold vs. remaining
+- Price trajectory
+- Your potential entry point
+
+### Notification System
+
+Opt-in notifications for:
+- Launch start alerts
+- Cap milestone alerts
+- Launch completion
+- Claim availability
+
+### Portfolio Tracking
+
+Track across all launches:
+- Total invested
+- Tokens received
+- Current value
+- Performance metrics
+
+## Security Considerations
+
+### Before Participating
+
+1. **Verify contract addresses**: Check against official sources
+2. **Review curve parameters**: Understand pricing mechanics
+3. **Check liquidity allocation**: Higher % = deeper markets
+4. **Research the project**: Due diligence on team and utility
+
+### During Participation
+
+- Approve only the amount you intend to spend
+- Use hardware wallets for large amounts
+- Double-check transaction details before confirming
+
+### After Launch
+
+- Verify received tokens match expectations
+- Check liquidity pool is funded
+- Monitor for any irregularities
+
+## Common Questions
+
+**Q: Can I participate multiple times?**
+A: Yes. Each participation is a separate purchase at the current price.
+
+**Q: What if price changes while my transaction is pending?**
+A: You'll receive tokens at the price when your transaction executes, which may differ from when you submitted.
+
+**Q: Can I sell during the launch?**
+A: No. Trading activates only after launch completion and liquidity seeding.
+
+**Q: What happens to unsold tokens?**
+A: Depends on launch configuration: may be burned, sent to treasury, or allocated to liquidity.

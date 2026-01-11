@@ -1,267 +1,88 @@
 ---
 title: "Providing Liquidity"
-description: "How to provide liquidity on Zentra X and optimize your positions"
+description: "How to provide liquidity on Zentra X"
 ---
 
 ## Overview
 
-Liquidity provision on Zentra X uses the Liquidity Book model. Instead of depositing into a single pool position, you allocate capital across specific price bins.
+Liquidity provision on Zentra X uses the Liquidity Book model. You allocate capital across specific price bins rather than a single pool position.
 
-This guide covers:
-- How LP positions work
-- Choosing liquidity shapes
-- Managing and rebalancing positions
-- Understanding risks and rewards
+## How It Works
 
-## How LP Positions Work
+### Bin-Based Positions
 
-### Bin-Based Allocation
-
-When you provide liquidity, you're depositing into one or more price bins:
+When you provide liquidity, you deposit into price bins:
 
 ```
 Your Position:
-├── Bin 8388600 ($1.95): 500 USDC worth
-├── Bin 8388608 ($2.00): 1000 USDC worth  ← Active bin
-├── Bin 8388616 ($2.05): 500 USDC worth
-└── Total: 2000 USDC equivalent
+├── Bin 8388606 ($0.99): 500 USDC
+├── Bin 8388608 ($1.00): 1000 USDC  ← Active bin
+├── Bin 8388610 ($1.01): 500 USDC
+└── Total: 2000 USDC
 ```
-
-Each bin is tracked separately. You receive shares proportional to your contribution in each bin.
 
 ### Token Composition
 
-Your deposit composition depends on which bins you're adding to:
-
 | Bin Location | You Deposit | Why |
 |--------------|-------------|-----|
-| Below active | Token Y only | These bins are "sold out" of X |
-| Active bin | Both tokens | Mixed composition |
-| Above active | Token X only | These bins are "sold out" of Y |
-
-**Example:** Adding to bins around $2.00 ETH/USDC
-
-- Bins at $1.95, $1.98: Deposit USDC only
-- Bin at $2.00 (active): Deposit ETH + USDC
-- Bins at $2.02, $2.05: Deposit ETH only
+| Below active | Token Y only | Bins "sold out" of X |
+| Active bin | Both tokens | Mixed |
+| Above active | Token X only | Bins "sold out" of Y |
 
 ### Fee Earning
 
-Only the **active bin** earns trading fees. Your earnings depend on:
-
-1. **Whether price is in your bins** — Out-of-range bins earn nothing
-2. **Your share of active bin** — Proportional to your liquidity share
-3. **Trading volume** — More trades = more fees
-4. **Fee level** — Dynamic fees during volatility
-
-## Liquidity Shapes
-
-Zentra X offers preset shapes for common strategies:
-
-### Spot (Uniform)
-
-```
-Distribution:  [====][====][====][====][====]
-Risk Level:    Medium
-Best For:      Ranging markets, passive LPs
-```
-
-Equal liquidity across all selected bins.
-
-**Pros:**
-- Balanced exposure
-- Consistent fee earning across price range
-- Lower rebalancing needs
-
-**Cons:**
-- Diluted fee capture (spread thin)
-- Not optimal for trending markets
-
-### Curve (Concentrated)
-
-```
-Distribution:  [==][====][========][====][==]
-Risk Level:    Higher
-Best For:      Stable pairs, high conviction
-```
-
-Heavy allocation to active bin, tapering outward.
-
-**Pros:**
-- Maximum fee capture at current price
-- Highest capital efficiency
-
-**Cons:**
-- Higher IL if price moves
-- Requires more active management
-
-### Bid-Ask
-
-```
-Distribution:  [========][====][  ][====][========]
-Risk Level:    Lower
-Best For:      Volatility capture, mean reversion
-```
-
-Liquidity on both sides with gap around active price.
-
-**Pros:**
-- Captures price swings
-- Natural DCA effect
-- Lower IL in range-bound markets
-
-**Cons:**
-- Misses fees during stable periods
-- Complex rebalancing
+Only the **active bin** earns fees. Your earnings depend on:
+- Your share of the active bin
+- Trading volume
+- Current fee level (dynamic)
 
 ## Adding Liquidity
 
-### Step-by-Step
-
-1. **Select Pool**
-   - Choose token pair (e.g., PHRS/USDC)
-   - Review pool stats (volume, TVL, fees)
-
-2. **Choose Strategy**
-   - Select liquidity shape
-   - Set price range (bin range)
-   - Review token requirements
-
-3. **Deposit Tokens**
-   - Approve token spending
-   - Confirm deposit transaction
-   - Receive LP position
-
-### Configuration Options
-
-| Parameter | Description | Impact |
-|-----------|-------------|--------|
-| Bin Range | How many bins to cover | Wider = more coverage, less concentration |
-| Shape | Distribution pattern | Affects fee capture and IL |
-| Amount | Total value to deposit | Proportional to your share |
+1. **Select Pool**: Choose token pair, review stats
+2. **Choose Shape**: [Select distribution strategy](/docs/products/zentra-x/liquidity-shapes)
+3. **Set Range**: How many bins to cover
+4. **Deposit**: Approve and confirm transaction
 
 ## Managing Positions
 
-### Monitoring
+**Monitor:**
+- Current value and fees earned
+- In-range status
+- Bin distribution
 
-Track your positions through the Zentra X interface:
-
-- **Current value:** Real-time valuation
-- **Fees earned:** Accumulated and claimable
-- **In-range status:** Whether you're earning
-- **Bin distribution:** Visual representation
-
-### Rebalancing
-
-When price moves significantly, consider rebalancing:
-
-**Signs you need to rebalance:**
+**Rebalance when:**
 - Position mostly out of range
-- Accumulated IL exceeds fee earnings
-- Market regime changed
+- IL exceeds fee earnings
+- Market conditions changed
 
-**How to rebalance:**
-1. Withdraw from current position
-2. Re-add at new price range
-3. Consider transaction costs vs. benefit
+**Claim fees:**
+- No lockup, claim anytime
+- Paid in LP tokens
 
-### Claiming Fees
-
-Fees accumulate in your position and can be claimed anytime:
-
-- No lockup or vesting
-- Claimed in the tokens you're LPing
-- Gas cost for claim transaction
-
-## Risk Management
+## Risk Factors
 
 ### Impermanent Loss
 
-IL in Liquidity Book works differently than continuous AMMs:
+- **Within bin**: No IL (constant sum formula)
+- **Across bins**: Discrete IL when bins flip
 
-**Within a bin:** No IL. Constant sum means reserves change but value doesn't.
+### Concentration Trade-off
 
-**Across bins:** Discrete IL when bins flip. Each bin crossing is like a limit order filling.
-
-**IL Formula (simplified):**
-$$
-\text{IL} = 2 \cdot \frac{\sqrt{r}}{1+r} - 1
-$$
-
-Where $r$ = price ratio (current/initial).
-
-### Concentrated Position Risk
-
-More concentration = higher risk/reward:
-
-| Concentration | Fee Potential | IL Risk | Management Need |
-|---------------|---------------|---------|-----------------|
-| Wide (many bins) | Lower | Lower | Passive |
+| Width | Fee Potential | IL Risk | Management |
+|-------|---------------|---------|------------|
+| Wide | Lower | Lower | Passive |
 | Medium | Moderate | Moderate | Occasional |
-| Tight (few bins) | Higher | Higher | Active |
+| Tight | Higher | Higher | Active |
 
-### Market Conditions
-
-Different markets favor different strategies:
-
-| Market Type | Recommended Shape | Rationale |
-|-------------|-------------------|-----------|
-| Stable pair | Tight curve | Price stays in range |
-| Volatile pair | Wide spot | Price moves unpredictably |
-| Trending | Bid-ask or single-side | Capture directional moves |
-| Launching token | Curve near launch price | High volume, concentrated trading |
-
-## Advanced Strategies
-
-### Single-Sided Liquidity
-
-Deposit only one token by selecting bins on one side:
-
-**Selling strategy (above current price):**
-- Deposit token X in bins above active
-- As price rises, X sells for Y
-- Natural take-profit mechanism
-
-**Buying strategy (below current price):**
-- Deposit token Y in bins below active
-- As price falls, Y buys X
-- Natural DCA mechanism
-
-### Range Orders
-
-Use tight bin ranges as limit orders:
-
-1. Place liquidity in single bin above/below current price
-2. When price reaches that bin, trade executes
-3. Position flips to opposite token
-
-This creates on-chain limit orders without active monitoring.
-
-### Multi-Position Management
-
-Advanced LPs run multiple positions:
-
-- Core position: Wide, passive
-- Satellite positions: Tight, actively managed
-- Hedging positions: Opposite side exposure
-
-## Common Mistakes
+## Quick Tips
 
 <Warning>
-**Avoid these common LP errors:**
-
-1. **Too concentrated without monitoring** — Tight positions need attention
-2. **Ignoring IL during trends** — Rebalance before losses compound
-3. **Chasing high APRs** — Volume-based APRs are backward-looking
-4. **Over-trading** — Transaction costs eat into profits
+**Common mistakes to avoid:**
+- Too concentrated without monitoring
+- Ignoring IL during trends
+- Over-trading (gas costs add up)
 </Warning>
 
-## Summary
-
-| Aspect | Key Point |
-|--------|-----------|
-| Position structure | Shares in specific bins |
-| Fee earning | Only active bin earns |
-| Shapes | Spot, Curve, Bid-Ask |
-| Main risk | Impermanent loss |
-| Management | More concentration = more attention |
+<Card title="Choose Your Shape" icon="chart-pie" href="/docs/products/zentra-x/liquidity-shapes">
+  Learn about Spot, Curve, and Bid-Ask distributions
+</Card>

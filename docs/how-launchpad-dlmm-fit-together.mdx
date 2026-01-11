@@ -34,10 +34,10 @@ ZentraFi rejects this separation. Zentra App (launchpad) and Zentra X (DEX) are 
 
 When a project launches on Zentra App, they configure:
 
-- **Token parameters** — Supply, name, metadata
-- **Pricing curve** — How price responds to demand
-- **Duration** — How long the launch runs
-- **Liquidity allocation** — What percentage seeds the market
+- **Token parameters**: Supply, name, metadata
+- **Pricing curve**: How price responds to demand
+- **Duration**: How long the launch runs
+- **Liquidity allocation**: What percentage seeds the market
 
 Participants buy tokens through adaptive pricing. Early buyers get lower prices. As demand increases, so does the price. This mechanism:
 
@@ -49,9 +49,9 @@ Participants buy tokens through adaptive pricing. Early buyers get lower prices.
 
 When the launch completes:
 
-1. **Raised capital is allocated** — A portion (defined by the creator) goes to liquidity
-2. **Bins are populated** — Liquidity seeds into DLMM bins around the terminal price
-3. **Pool goes live** — Trading activates on Zentra X
+1. **Raised capital is allocated**: A portion (defined by the creator) goes to liquidity
+2. **Bins are populated**: Liquidity seeds into DLMM bins around the terminal price
+3. **Pool goes live**: Trading activates on Zentra X
 
 This happens atomically. There's no gap where the token exists without a market.
 
@@ -84,8 +84,8 @@ Liquidity exists in discrete price bins. Each bin:
 ### Dynamic Fees
 
 Fees respond to market conditions:
-- **Base fee** — Minimum cost set by pool configuration
-- **Variable fee** — Scales with volatility (bin crossings, swap frequency)
+- **Base fee**: Minimum cost set by pool configuration
+- **Variable fee**: Scales with volatility (bin crossings, swap frequency)
 
 During launch days and high-volatility periods, fees increase automatically. This:
 - Compensates LPs for increased risk
@@ -115,26 +115,26 @@ This integration provides:
 
 From day one, launched tokens have:
 
-- **Real liquidity** — Not just a pool with minimal depth
-- **Fair pricing** — DLMM bins prevent excessive slippage
-- **Market integrity** — Dynamic fees discourage manipulation
+- **Real liquidity**: Not just a pool with minimal depth
+- **Fair pricing**: DLMM bins prevent excessive slippage
+- **Market integrity**: Dynamic fees discourage manipulation
 
 ## For LPs
 
 DLMM pools from launches offer:
 
-- **Concentrated positions** — Capital focused where trading occurs
-- **Fee capture** — Dynamic fees during volatile periods
-- **Clear entry points** — Join markets with established price ranges
+- **Concentrated positions**: Capital focused where trading occurs
+- **Fee capture**: Dynamic fees during volatile periods
+- **Clear entry points**: Join markets with established price ranges
 
 ## Technical Details
 
 ### Liquidity Seeding Parameters
 
 Pool creators configure:
-- **Bin step** — Price increment between bins (e.g., 0.25%)
-- **Active bin range** — How many bins around the active price receive liquidity
-- **Distribution shape** — Uniform, concentrated, or custom
+- **Bin step**: Price increment between bins (e.g., 0.25%)
+- **Active bin range**: How many bins around the active price receive liquidity
+- **Distribution shape**: Uniform, concentrated, or custom
 
 ### Price Continuity
 
@@ -150,6 +150,6 @@ This ensures trading begins at exactly the price where distribution ended.
 
 Initial liquidity can follow different distributions:
 
-- **Uniform** — Equal amounts across all seeded bins
-- **Concentrated** — Heavier allocation near the active bin
-- **Custom** — Project-defined distribution for specific use cases
+- **Uniform**: Equal amounts across all seeded bins
+- **Concentrated**: Heavier allocation near the active bin
+- **Custom**: Project-defined distribution for specific use cases

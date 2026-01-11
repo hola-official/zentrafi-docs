@@ -1,0 +1,111 @@
+---
+title: 'Liquidity Shapes'
+description: 'Choose the right distribution strategy for your LP position'
+---
+
+## Overview
+
+When providing liquidity on Zentra X, you choose how to distribute capital across price bins. Each shape has different risk/reward characteristics.
+
+## Shapes
+
+### Spot (Uniform)
+
+<Frame>
+  <img src="/images/spot-shape.png" alt="Spot Distribution" style={{ borderRadius: '8px' }} />
+</Frame>
+
+Equal liquidity across all selected bins.
+
+| Attribute | Value |
+|-----------|-------|
+| Distribution | Uniform |
+| Best for | Ranging markets, passive LPs, uncertain direction |
+| Risk level | Medium |
+| Rebalancing | Low frequency |
+
+**When to use:**
+- You're new to LP
+- Market has no clear trend
+- You want less active management
+
+---
+
+### Curve (Concentrated)
+
+<Frame>
+  <img src="/images/curve-shape.png" alt="Curve Distribution" style={{ borderRadius: '8px' }} />
+</Frame>
+
+Heavy allocation at current price, tapering outward.
+
+| Attribute | Value |
+|-----------|-------|
+| Distribution | Bell curve |
+| Best for | Stable pairs, high conviction, max fee capture |
+| Risk level | Higher |
+| Rebalancing | Frequent |
+
+**When to use:**
+- Stablecoin pairs (USDC/USDT)
+- You expect price to stay in tight range
+- You want maximum capital efficiency
+
+---
+
+### Bid-Ask
+
+<Frame>
+  <img src="/images/bid-ask-shape.png" alt="Bid-Ask Distribution" style={{ borderRadius: '8px' }} />
+</Frame>
+
+Capital on both ends with gap around current price.
+
+| Attribute | Value |
+|-----------|-------|
+| Distribution | Inverted curve |
+| Best for | Volatile pairs, DCA strategies, capturing swings |
+| Risk level | Lower IL risk |
+| Rebalancing | Moderate |
+
+**When to use:**
+- You expect large price swings
+- Natural dollar-cost averaging
+- Mean reversion strategies
+
+## Spot Variations
+
+For more granular control, Spot shape has concentration options:
+
+| Variation | Bins | Use Case | Management |
+|-----------|------|----------|------------|
+| **Concentrated** | 1-3 | Stables, max efficiency | Very active |
+| **Normal** | 10-20 | Standard pairs | Daily check |
+| **Wide** | 50+ | Volatile pairs, hands-off | Passive |
+
+## Choosing a Shape
+
+```
+Is the pair stable (e.g., USDC/USDT)?
+├── Yes → Curve (tight)
+└── No
+    ├── Do you expect a trend?
+    │   ├── Yes → Single-sided or Bid-Ask
+    │   └── No → Spot
+    └── High volatility expected?
+        ├── Yes → Spot (wide) or Bid-Ask
+        └── No → Spot (normal) or Curve
+```
+
+## Bin Step Selection
+
+Bin step determines price granularity:
+
+| Bin Step | Price Increment | Best For |
+|----------|-----------------|----------|
+| 1 bp | 0.01% | Stablecoins |
+| 10 bp | 0.1% | Major pairs |
+| 25 bp | 0.25% | Standard tokens |
+| 100 bp | 1% | Volatile/new tokens |
+
+Smaller steps = more precision, but narrower max range per position.

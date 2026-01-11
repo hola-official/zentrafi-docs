@@ -1,25 +1,252 @@
 ---
 title: 'Fair Launch Design'
-description: 'Post-launch liquidity flow and DLMM integration'
+description: 'Principles and mechanisms for equitable token distribution'
 ---
 
-## Post-Launch Liquidity Flow
+## What Makes a Launch "Fair"?
 
-After the launch:
+Fair launches are often defined by what they avoid: no VC allocations, no insider deals, no pre-mines. But avoiding bad practices isn't the same as implementing good ones.
 
-- Liquidity is deployed to Zentra X
-- DLMM manages liquidity placement
-- Trading begins immediately
+A truly fair launch requires:
 
-## Why DLMM Matters Here
+1. **Equal access**: Anyone can participate under the same rules
+2. **Transparent pricing**: No hidden information advantages
+3. **Proportional allocation**: Contribution determines share
+4. **Immediate utility**: Tokens work from day one
 
-DLMM helps absorb early volatility by:
+ZentraFi's launch infrastructure is designed around these principles.
 
-- Concentrating liquidity near the active price
-- Adjusting as market conditions change
+## Design Principles
 
-This reduces extreme price swings common after launches.
+### 1. No Privileged Access
 
-## The Result
+Traditional launches often have hidden layers:
+- Seed rounds at lower prices
+- Team allocations that vest differently
+- Whitelist spots distributed through connections
 
-Tokens launched on ZentraFi don't just get listed — they get functional, efficient markets from day one.
+ZentraFi launches operate on a single rule set:
+- One price curve for everyone
+- Public parameters visible before launch
+- No off-chain allocation mechanisms
+
+### 2. Information Symmetry
+
+Fair markets require equal information. ZentraFi provides:
+
+**Before launch:**
+- Full curve parameters
+- Cap structures
+- Liquidity allocation %
+- Token contract details
+
+**During launch:**
+- Real-time price
+- Tokens sold
+- Time remaining
+- Participant count
+
+**After launch:**
+- Final distribution data
+- Liquidity pool address
+- Trading metrics
+
+### 3. Economic Alignment
+
+Launch mechanics should align incentives:
+
+| Actor | Aligned Incentive |
+|-------|-------------------|
+| Project | High participation, stable post-launch |
+| Early buyers | Price appreciation potential |
+| Late buyers | Proven demand validation |
+| LPs | Immediate fee-earning opportunity |
+
+The adaptive curve creates natural equilibrium: early risk is rewarded, late certainty costs more.
+
+### 4. Instant Market Formation
+
+Tokens without markets aren't useful. ZentraFi ensures:
+
+- **Automatic liquidity seeding** from launch proceeds
+- **Immediate trading** when launch completes
+- **No bootstrapping gap** between distribution and utility
+
+## Fair Launch Types
+
+### Community Launch
+
+**Configuration:**
+- Linear or sigmoid curve
+- Lower curve steepness
+- Higher liquidity allocation (80%+)
+- Longer duration
+
+**Characteristics:**
+- Moderate early advantage
+- Wide participation window
+- Deep initial liquidity
+- Stable post-launch trading
+
+**Best for:** DAOs, community tokens, ecosystem projects
+
+### Discovery Launch
+
+**Configuration:**
+- Exponential curve
+- Higher curve steepness
+- Moderate liquidity allocation (60-80%)
+- Shorter duration
+
+**Characteristics:**
+- Strong price discovery
+- Significant early advantage
+- Clear demand signal
+- Volatile but informative
+
+**Best for:** New primitives, uncertain valuations
+
+### Stability Launch
+
+**Configuration:**
+- Sigmoid curve with ceiling
+- Defined price range
+- Very high liquidity allocation (90%+)
+- Extended duration
+
+**Characteristics:**
+- Bounded price movement
+- Predictable outcomes
+- Maximum liquidity depth
+- Lower speculation
+
+**Best for:** Stablecoins, RWA tokens, utility tokens
+
+## Anti-Manipulation Measures
+
+### Sybil Resistance
+
+Multiple wallets don't provide advantages:
+- No per-wallet caps to circumvent
+- Price is universal
+- Splitting purchases doesn't reduce cost
+
+### Whale Protection
+
+Large purchases face natural resistance:
+- Curve steepness limits size advantages
+- Big buys move price significantly
+- Public execution reveals large players
+
+### Bot Mitigation
+
+Automated trading provides no edge:
+- Speed doesn't affect price
+- No arbitrage during launch
+- Front-running moves your own price
+
+## Liquidity Transition
+
+### The Handoff Problem
+
+Most launches fail at the transition:
+
+```
+Launch Complete → ??? → Trading Active
+```
+
+This gap enables:
+- Price manipulation before liquidity exists
+- Team extraction before markets form
+- Confusion about where to trade
+
+### ZentraFi's Solution
+
+Atomic transition with no gap:
+
+```
+Launch Complete → Liquidity Seeds → Trading Active
+         [Single Transaction Block]
+```
+
+1. Launch finalizes
+2. Liquidity allocation executes
+3. DLMM bins populate
+4. Pool activates
+
+All in one transaction sequence. No window for manipulation.
+
+### Liquidity Parameters
+
+| Parameter | Default | Range | Impact |
+|-----------|---------|-------|--------|
+| Allocation % | 80% | 50-100% | Market depth |
+| Bin Step | 25 bps | 1-100 bps | Price granularity |
+| Distribution | Concentrated | Various | Initial shape |
+| Bin Range | ±10 bins | ±5-50 | Liquidity spread |
+
+## Post-Launch Dynamics
+
+### Price Behavior
+
+After launch, price is determined by:
+- Organic supply/demand on Zentra X
+- DLMM bin mechanics
+- LP additions/removals
+
+Launch curve no longer applies: it only governed distribution.
+
+### Liquidity Evolution
+
+Initial liquidity is seeded, but markets evolve:
+
+**Week 1:** Launch liquidity dominates
+**Month 1:** External LPs join successful tokens
+**Ongoing:** Market forces determine depth
+
+### Project Responsibilities
+
+After launch, projects should:
+- Monitor pool health
+- Consider additional liquidity if needed
+- Engage community LPs
+- Build utility for the token
+
+## Evaluating Launch Fairness
+
+### Green Flags
+
+- Public curve parameters
+- Reasonable liquidity allocation
+- No hidden allocations
+- Verified contracts
+- Clear post-launch plans
+
+### Red Flags
+
+- Opaque pricing mechanisms
+- Low liquidity allocation (less than 50%)
+- Large team/insider pre-allocations
+- Unverified or upgradeable contracts
+- No clear token utility
+
+### Questions to Ask
+
+1. Can I verify the curve parameters on-chain?
+2. What percentage goes to liquidity vs. team?
+3. Is there any way to get better terms than public?
+4. What happens to unsold tokens?
+5. When and how does trading activate?
+
+## Summary
+
+Fair launches require more than good intentions: they need mechanisms that enforce fairness:
+
+| Principle | Mechanism |
+|-----------|-----------|
+| Equal access | Single public curve |
+| Transparent pricing | On-chain parameters |
+| Proportional allocation | Adaptive pricing |
+| Immediate utility | DLMM liquidity seeding |
+
+ZentraFi's infrastructure makes fair launches the default, not the exception.
