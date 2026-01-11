@@ -1,4 +1,274 @@
 ---
-title: 'ZentraFi Stack'
+title: 'Protocol Stack'
+description: 'Technical architecture and system design of ZentraFi'
 ---
 
+## Architecture Overview
+
+ZentraFi is structured as a modular protocol stack. Each layer has distinct responsibilities and can evolve independently while maintaining interoperability with adjacent layers.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      APPLICATION LAYER                          │
+│    Zentra App  •  Zentra X Interface  •  Analytics Dashboard    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       PROTOCOL LAYER                            │
+│   Launchpad Contracts  •  Liquidity Book  •  Router  •  Oracle  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      GOVERNANCE LAYER                           │
+│    veZTR Voting  •  Gauge Controller  •  Treasury  •  Timelock  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      SETTLEMENT LAYER                           │
+│                        Pharos Network                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Application Layer
+
+The application layer provides user-facing interfaces for interacting with protocol contracts.
+
+### Zentra App (Launchpad Interface)
+
+**Purpose:** Token creation, launch configuration, and participation management.
+
+**Components:**
+- Launch wizard for project configuration
+- Participation interface for buyers
+- Real-time price discovery visualization
+- Post-launch analytics and tracking
+
+**Interactions:**
+- Reads from launchpad contracts for active launches
+- Writes to launchpad contracts for participation
+- Queries oracle for price feeds
+
+### Zentra X Interface (DEX)
+
+**Purpose:** Trading, liquidity provision, and position management.
+
+**Components:**
+- Swap interface with route optimization
+- Liquidity management dashboard
+- Position analytics and P&L tracking
+- Pool explorer and market data
+
+**Interactions:**
+- Reads pool state from Liquidity Book contracts
+- Writes swaps through router contracts
+- Manages LP positions through factory contracts
+
+### Analytics Dashboard
+
+**Purpose:** Protocol-wide metrics and performance tracking.
+
+**Components:**
+- Volume and TVL tracking
+- Fee generation analytics
+- Launch performance metrics
+- Governance participation stats
+
+## Protocol Layer
+
+The protocol layer contains the core smart contracts that implement ZentraFi's functionality.
+
+### Launchpad Contracts
+
+**LBLaunchpad** — Factory contract for creating and managing token launches.
+
+```solidity
+// Simplified interface
+interface ILBLaunchpad {
+    function createLaunch(
+        LaunchParams calldata params
+    ) external returns (address launchAddress);
+
+    function participate(
+        address launch,
+        uint256 amount
+    ) external payable;
+
+    function finalizeLaunch(
+        address launch
+    ) external;
+}
+```
+
+**Key Functions:**
+- `createLaunch` — Deploy new launch with specified parameters
+- `participate` — Buy tokens during active launch
+- `finalizeLaunch` — Complete launch and seed liquidity
+
+### Liquidity Book Contracts
+
+**LBFactory** — Registry and factory for liquidity pools.
+
+```solidity
+interface ILBFactory {
+    function createLBPair(
+        IERC20 tokenX,
+        IERC20 tokenY,
+        uint24 activeId,
+        uint16 binStep
+    ) external returns (ILBPair pair);
+
+    function setPreset(
+        uint16 binStep,
+        uint16 baseFactor,
+        uint16 filterPeriod,
+        uint16 decayPeriod,
+        uint16 reductionFactor,
+        uint24 variableFeeControl,
+        uint16 protocolShare,
+        uint24 maxVolatilityAccumulator
+    ) external;
+}
+```
+
+**LBPair** — Individual liquidity pool implementing bin-based trading.
+
+```solidity
+interface ILBPair {
+    function swap(
+        bool swapForY,
+        address to
+    ) external returns (bytes32 amountsOut);
+
+    function mint(
+        address to,
+        bytes32[] calldata liquidityConfigs,
+        address refundTo
+    ) external returns (
+        bytes32 amountsReceived,
+        bytes32 amountsLeft,
+        uint256[] memory liquidityMinted
+    );
+
+    function burn(
+        address from,
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata amountsToBurn
+    ) external returns (
+        bytes32[] memory amounts
+    );
+}
+```
+
+**LBRouter** — Aggregation and routing for optimal execution.
+
+```solidity
+interface ILBRouter {
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        Path memory path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256 amountOut);
+
+    function addLiquidity(
+        LiquidityParameters calldata liquidityParameters
+    ) external returns (
+        uint256 amountXAdded,
+        uint256 amountYAdded,
+        uint256 amountXLeft,
+        uint256 amountYLeft,
+        uint256[] memory depositIds,
+        uint256[] memory liquidityMinted
+    );
+}
+```
+
+### Oracle Integration
+
+Price oracles provide external price references for:
+- Launch pricing validation
+- Fee calculation inputs
+- Analytics and reporting
+
+## Governance Layer
+
+The governance layer manages protocol parameters and resource allocation.
+
+### veZTR (Vote-Escrowed ZTR)
+
+**Purpose:** Governance token representing voting power.
+
+**Mechanics:**
+- Users stake ZTR to receive veZTR
+- veZTR accrues linearly over 7 days to maximum (1000x stake)
+- Unstaking resets veZTR balance to zero
+- veZTR is non-transferable
+
+### Gauge Controller
+
+**Purpose:** Manages emission allocation across pools.
+
+**Functions:**
+- Records veZTR votes for pools
+- Calculates emission weights using power model
+- Distributes ZTR rewards proportionally
+
+### Treasury
+
+**Purpose:** Holds protocol-owned assets.
+
+**Management:**
+- Controlled by governance proposals
+- Funds ecosystem development
+- Manages protocol-owned liquidity
+
+### Timelock
+
+**Purpose:** Security mechanism for governance actions.
+
+**Parameters:**
+- Minimum delay before execution
+- Cancellation capabilities
+- Emergency actions for critical situations
+
+## Settlement Layer
+
+ZentraFi settles all transactions on **Pharos**, a high-performance EVM-compatible network.
+
+### Network Characteristics
+
+| Property | Value |
+|----------|-------|
+| Consensus | PoS-based |
+| Block Time | Fast finality |
+| Gas Costs | Low |
+| EVM Compatibility | Full |
+
+### Contract Deployment
+
+All ZentraFi contracts are deployed on Pharos mainnet. Contract addresses are available in the [Contracts](/docs/resources/contracts) section.
+
+## Security Model
+
+### Contract Security
+
+- Audited by [Audit Firm — TBD]
+- Bug bounty program active
+- Formal verification on critical paths
+
+### Access Control
+
+- Factory contracts: Admin-controlled presets
+- Pair contracts: Permissionless after creation
+- Governance: Timelock-protected
+
+### Upgrade Path
+
+- Core contracts: Immutable
+- Peripheral contracts: Upgradeable through governance
+- Parameters: Adjustable within bounds

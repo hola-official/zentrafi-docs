@@ -88,11 +88,9 @@
           {
             "group": "Governance & Tokenomics",
             "pages": [
-              "docs/governance-and-tokenomics/voting-model-ve-ztr",
-              "docs/governance-and-tokenomics/incentive-direction-gauges",
-              "docs/governance-and-tokenomics/token-utility",
-              "docs/governance-and-tokenomics/emissions-and-fees",
-              "docs/governance-and-tokenomics/value-flow-high-level"
+              "docs/governance-and-tokenomics/governance",
+              "docs/governance-and-tokenomics/farming",
+              "docs/governance-and-tokenomics/tokenomics"
             ]
           },
           "docs/roadmap"
@@ -107,12 +105,7 @@
         "label": "Support",
         "href": "mailto:info@zentrafi.xyz"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
+    ]
   },
   "contextual": {
     "options": [
@@ -120,10 +113,7 @@
      "view",
      "chatgpt",
      "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
+     "mcp"
    ]
   },
   "footer": {

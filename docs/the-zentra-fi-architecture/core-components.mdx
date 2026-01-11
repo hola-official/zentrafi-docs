@@ -1,4 +1,233 @@
 ---
 title: 'Core Components'
+description: 'Detailed breakdown of ZentraFi protocol components'
 ---
 
+## Component Overview
+
+ZentraFi consists of four core components, each serving a distinct function in the protocol's operation.
+
+| Component | Function | Layer |
+|-----------|----------|-------|
+| Launchpad | Token distribution | Protocol |
+| Liquidity Book | Trading and LP | Protocol |
+| Governance | Parameter control | Governance |
+| Treasury | Asset management | Governance |
+
+## Launchpad
+
+The launchpad enables projects to distribute tokens through adaptive pricing mechanisms that respond to real-time demand.
+
+### Design Goals
+
+1. **Fair Distribution** — Prevent bots and insiders from capturing disproportionate allocations
+2. **Price Discovery** — Find market-clearing prices organically
+3. **Liquidity Integration** — Seed trading markets automatically
+
+### Adaptive Pricing Model
+
+Unlike fixed-price sales where early participants get guaranteed allocations, ZentraFi's launchpad uses continuous pricing:
+
+$$
+P(t) = P_0 \cdot f(D(t))
+$$
+
+Where:
+- $P(t)$ = Price at time $t$
+- $P_0$ = Initial price
+- $D(t)$ = Cumulative demand at time $t$
+- $f$ = Pricing function (configurable)
+
+### Pricing Functions
+
+**Linear:**
+$$
+f(D) = 1 + k \cdot D
+$$
+
+**Exponential:**
+$$
+f(D) = e^{k \cdot D}
+$$
+
+**Sigmoid:**
+$$
+f(D) = \frac{L}{1 + e^{-k(D - D_0)}}
+$$
+
+Projects choose the function that matches their distribution goals.
+
+### Launch Types
+
+| Type | Mechanism | Best For |
+|------|-----------|----------|
+| Fair Launch | Equal opportunity, adaptive price | Community tokens |
+| Bonding Curve | Price increases with supply | Price discovery |
+| Dutch Auction | Price decreases over time | High-demand launches |
+
+### Post-Launch Flow
+
+When a launch completes:
+
+1. Token distribution finalizes
+2. Liquidity allocation triggers
+3. DLMM pool receives seeded liquidity
+4. Trading activates on Zentra X
+
+## Liquidity Book
+
+The Liquidity Book is ZentraFi's core trading infrastructure — a discretized AMM that organizes liquidity into price bins.
+
+### Why Discretization?
+
+Traditional constant-product AMMs use continuous curves:
+
+$$
+x \cdot y = k
+$$
+
+This spreads liquidity across infinite prices. A token at $1 has liquidity at $0.001 and $1000 — completely useless capital.
+
+Liquidity Book discretizes into bins:
+
+$$
+P_i \cdot x_i + y_i = L_i
+$$
+
+Each bin $i$ holds liquidity $L_i$ at a single price $P_i$. Capital only exists where it can be used.
+
+### Bin Mechanics
+
+**Bin Step:**
+The price increment between consecutive bins.
+
+$$
+P_{i+1} = P_i \cdot (1 + s)
+$$
+
+Where $s$ is the bin step (e.g., 0.25% = 25 basis points).
+
+**Active Bin:**
+The bin currently containing both token reserves. Only the active bin earns fees.
+
+**Bin Composition:**
+Each bin contains reserves following:
+
+$$
+c = \frac{y}{L}
+$$
+
+Where $c$ is the composition factor (percentage of bin in token Y).
+
+### Trading Flow
+
+1. User submits swap request
+2. Router finds optimal path through bins
+3. Active bin provides liquidity at fixed price
+4. If depleted, price moves to next bin
+5. Fees collected and distributed to bin LPs
+
+### Fee Structure
+
+$$
+\text{Fee} = \text{Base Fee} + \text{Variable Fee}
+$$
+
+**Base Fee:**
+$$
+f_b = B \cdot s
+$$
+
+Where $B$ is the base factor and $s$ is bin step.
+
+**Variable Fee:**
+$$
+f_v = A \cdot (v_a)^2
+$$
+
+Where $A$ is the variable fee control and $v_a$ is the volatility accumulator.
+
+The volatility accumulator increases with:
+- Bin crossings during swaps
+- Swap frequency
+- Large trade sizes
+
+## Governance
+
+Governance coordinates protocol resources through vote-escrowed token mechanics.
+
+### veZTR System
+
+```
+Stake ZTR → Accrue veZTR → Vote on Gauges → Direct Emissions
+```
+
+**Staking:**
+- No lock period required
+- Stake/unstake anytime
+- Unified staking (sZTR + veZTR simultaneously)
+
+**veZTR Accrual:**
+$$
+\text{veZTR}(t) = \min\left(\text{ZTR} \cdot \frac{t}{T}, \text{ZTR} \cdot M\right)
+$$
+
+Where:
+- $t$ = Time since stake
+- $T$ = Time to maximum (7 days)
+- $M$ = Maximum multiplier (1000x)
+
+**Voting Power:**
+Pool weight uses power model:
+
+$$
+w_i = v_i^{\alpha}
+$$
+
+Where $\alpha = 2/3$ encourages distribution across pools rather than concentration.
+
+### Gauge System
+
+Gauges measure votes and distribute emissions:
+
+1. veZTR holders vote for pools
+2. Gauge controller records weights
+3. Emissions distribute proportionally
+4. LPs claim rewards from farms
+
+### Voting Rewards
+
+Permissionless incentive layer:
+- Anyone can create reward pools
+- Deposited tokens reward voters
+- veZTR holders opt-in to programs
+- Rewards proportional to votes
+
+## Treasury
+
+The treasury manages protocol-owned assets through governance.
+
+### Revenue Sources
+
+| Source | Flow |
+|--------|------|
+| Protocol fees | % of trading fees |
+| Launch fees | % of raise |
+| Penalty fees | Early unstake, etc. |
+
+### Expenditure Categories
+
+- Liquidity mining emissions
+- Development funding
+- Ecosystem grants
+- Protocol-owned liquidity
+
+### Governance Control
+
+All treasury actions require:
+1. Governance proposal
+2. veZTR voting period
+3. Timelock delay
+4. Execution
+
+Emergency actions have separate paths with higher thresholds.

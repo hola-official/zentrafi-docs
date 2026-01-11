@@ -1,4 +1,155 @@
 ---
 title: 'How Launchpad + DLMM Fit Together'
+description: 'The integration between token distribution and discretized liquidity markets'
 ---
 
+## The Integration Thesis
+
+Most protocols treat launches and trading as separate problems. Launch on one platform, list on another, hope they connect.
+
+ZentraFi rejects this separation. Zentra App (launchpad) and Zentra X (DEX) are designed as a single system where each phase flows into the next.
+
+## The Complete Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        LAUNCH PHASE                                  │
+│  Project configures → Users participate → Price discovers           │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      TRANSITION PHASE                                │
+│  Launch closes → Liquidity seeds → Bins populate                    │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       TRADING PHASE                                  │
+│  Markets open → DLMM manages liquidity → Ongoing price discovery    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## Phase 1: Adaptive Distribution
+
+When a project launches on Zentra App, they configure:
+
+- **Token parameters** — Supply, name, metadata
+- **Pricing curve** — How price responds to demand
+- **Duration** — How long the launch runs
+- **Liquidity allocation** — What percentage seeds the market
+
+Participants buy tokens through adaptive pricing. Early buyers get lower prices. As demand increases, so does the price. This mechanism:
+
+- Rewards early participation without punishing late arrivals
+- Discovers a market-clearing price organically
+- Prevents bot frontrunning through continuous pricing
+
+## Phase 2: Liquidity Formation
+
+When the launch completes:
+
+1. **Raised capital is allocated** — A portion (defined by the creator) goes to liquidity
+2. **Bins are populated** — Liquidity seeds into DLMM bins around the terminal price
+3. **Pool goes live** — Trading activates on Zentra X
+
+This happens atomically. There's no gap where the token exists without a market.
+
+### Why This Matters
+
+Traditional launches create a liquidity bootstrapping problem:
+
+```
+Launch ends → ??? → Trading begins
+```
+
+That "???" is where most projects struggle. They need to:
+- Source capital for liquidity (often from team allocations)
+- Choose an AMM and configure pools
+- Hope initial trading doesn't drain their LP
+
+ZentraFi eliminates this gap. Launch capital becomes trading liquidity. The transition is automatic.
+
+## Phase 3: DLMM Trading
+
+Once live on Zentra X, the token trades through the Liquidity Book model:
+
+### Bin-Based Execution
+
+Liquidity exists in discrete price bins. Each bin:
+- Holds reserves at a fixed price
+- Executes trades at zero slippage until depleted
+- Moves the market to the next bin when exhausted
+
+### Dynamic Fees
+
+Fees respond to market conditions:
+- **Base fee** — Minimum cost set by pool configuration
+- **Variable fee** — Scales with volatility (bin crossings, swap frequency)
+
+During launch days and high-volatility periods, fees increase automatically. This:
+- Compensates LPs for increased risk
+- Discourages extractive trading strategies
+- Captures more value during peak demand
+
+### Natural Liquidity Management
+
+Because initial liquidity is seeded around the launch price, the market starts with concentrated depth. As trading continues:
+
+- Price movement depletes bins on one side
+- LPs can rebalance or add to positions
+- Additional liquidity providers join as the market matures
+
+## For Projects
+
+This integration provides:
+
+| Benefit | Description |
+|---------|-------------|
+| **No bootstrapping required** | Liquidity comes from launch proceeds |
+| **Immediate trading** | Markets activate when distribution ends |
+| **Price continuity** | Terminal launch price becomes initial trading price |
+| **Reduced coordination** | One platform handles both phases |
+
+## For Traders
+
+From day one, launched tokens have:
+
+- **Real liquidity** — Not just a pool with minimal depth
+- **Fair pricing** — DLMM bins prevent excessive slippage
+- **Market integrity** — Dynamic fees discourage manipulation
+
+## For LPs
+
+DLMM pools from launches offer:
+
+- **Concentrated positions** — Capital focused where trading occurs
+- **Fee capture** — Dynamic fees during volatile periods
+- **Clear entry points** — Join markets with established price ranges
+
+## Technical Details
+
+### Liquidity Seeding Parameters
+
+Pool creators configure:
+- **Bin step** — Price increment between bins (e.g., 0.25%)
+- **Active bin range** — How many bins around the active price receive liquidity
+- **Distribution shape** — Uniform, concentrated, or custom
+
+### Price Continuity
+
+The final launch price determines the initial active bin:
+
+$$
+\text{Active Bin} = \text{floor}\left(\frac{\log(\text{Launch Price})}{\log(1 + \text{Bin Step})}\right)
+$$
+
+This ensures trading begins at exactly the price where distribution ended.
+
+### Liquidity Distribution
+
+Initial liquidity can follow different distributions:
+
+- **Uniform** — Equal amounts across all seeded bins
+- **Concentrated** — Heavier allocation near the active bin
+- **Custom** — Project-defined distribution for specific use cases

@@ -1,4 +1,249 @@
 ---
-title: 'Dynamic Liquidity Market Maker (DLMM)'
+title: 'Liquidity Book DLMM'
+description: 'Understanding discretized liquidity and how it powers Zentra X'
 ---
 
+## What is Liquidity Book?
+
+Liquidity Book is an automated market maker (AMM) design that organizes liquidity into discrete price bins rather than spreading it across a continuous curve.
+
+This approach, pioneered by Trader Joe, fundamentally changes how liquidity works:
+
+| Aspect | Continuous AMM | Liquidity Book |
+|--------|---------------|----------------|
+| Price representation | Curve ($xy=k$) | Discrete bins |
+| Liquidity distribution | Infinite range | Specific prices |
+| Slippage | Every trade | Zero within bins |
+| Capital efficiency | ~2-5% active | Up to 100% active |
+| Fee model | Static | Dynamic |
+
+## The Problem with Continuous Curves
+
+Traditional AMMs use the constant product formula:
+
+$$
+x \cdot y = k
+$$
+
+This creates a smooth price curve where liquidity exists at every possible price. The problem: most of that liquidity is useless.
+
+**Example:** A token trading at $1.00
+
+In a constant product AMM, liquidity is spread from $0.0001 to $10,000+. But trading only happens near $1.00. Liquidity at $0.01 or $100 earns nothing — it's dead capital diluting returns for everyone.
+
+Concentrated liquidity (Uniswap v3) improves this by letting LPs choose ranges. But it introduces complexity:
+- Positions go out of range and stop earning
+- Active management becomes necessary
+- Gas costs for rebalancing add up
+
+## How Discretization Works
+
+Liquidity Book solves this differently. Instead of ranges on a curve, liquidity exists in **bins** — discrete containers at specific prices.
+
+### Bin Structure
+
+Each bin:
+- Holds reserves at a single price
+- Contains either one or both tokens
+- Earns fees only when active
+
+```
+Price: $0.98  $0.99  $1.00  $1.01  $1.02
+        [Y]    [Y]   [X+Y]   [X]    [X]
+                       ↑
+                  Active Bin
+```
+
+The **active bin** contains both tokens and is where trading occurs. Bins to the left contain only token Y (quote). Bins to the right contain only token X (base).
+
+### Bin Pricing
+
+Bins are spaced by a fixed percentage called the **bin step**:
+
+$$
+P_{i+1} = P_i \cdot (1 + s)
+$$
+
+Where $s$ is the bin step in decimal form.
+
+**Example:** With a 25 basis point (0.25%) bin step starting at $1.00:
+
+| Bin | Price |
+|-----|-------|
+| 0 | $1.0000 |
+| 1 | $1.0025 |
+| 2 | $1.0050 |
+| 3 | $1.0075 |
+| -1 | $0.9975 |
+| -2 | $0.9950 |
+
+### Constant Sum Within Bins
+
+Within each bin, liquidity follows the constant sum formula:
+
+$$
+P \cdot x + y = L
+$$
+
+Where:
+- $P$ = bin price
+- $x$ = token X reserves
+- $y$ = token Y reserves
+- $L$ = total liquidity in bin
+
+This means trades within a bin execute at **exactly** the bin price — zero slippage.
+
+## Trading Mechanics
+
+### Swap Execution
+
+When a user swaps:
+
+1. Trade starts in the active bin
+2. Reserves exchange at the bin's fixed price
+3. If the bin depletes, trading continues in the next bin
+4. Each bin crossed adds its price to the execution
+
+**Zero slippage scenario:** Trade fits entirely within active bin
+**Multi-bin scenario:** Trade crosses bins, each at its own price
+
+### Price Impact
+
+Price impact only occurs when trades cross bins:
+
+$$
+\text{Effective Price} = \frac{\sum_{i} P_i \cdot \Delta x_i}{\sum_{i} \Delta x_i}
+$$
+
+Small trades in liquid bins: zero slippage.
+Large trades crossing many bins: averaged price across all bins touched.
+
+### Example Trade
+
+Pool: ETH/USDC, Active bin at $2000, 10 bp bin step
+
+Trade: Buy 5 ETH
+
+| Bin | Price | ETH Available | ETH Bought | USDC Cost |
+|-----|-------|---------------|------------|-----------|
+| 0 | $2000 | 3 ETH | 3 ETH | $6,000 |
+| 1 | $2002 | 4 ETH | 2 ETH | $4,004 |
+
+**Result:** 5 ETH for $10,004 = $2,000.80 effective price
+
+## Dynamic Fees
+
+Liquidity Book implements **surge pricing** — fees that respond to market conditions.
+
+### Fee Components
+
+$$
+\text{Total Fee} = f_b + f_v
+$$
+
+**Base Fee ($f_b$):**
+$$
+f_b = B \cdot s
+$$
+
+The minimum fee, determined by base factor $B$ and bin step $s$.
+
+**Variable Fee ($f_v$):**
+$$
+f_v = A \cdot (v_a)^2
+$$
+
+Scales quadratically with the volatility accumulator $v_a$.
+
+### Volatility Accumulator
+
+The volatility accumulator tracks recent market activity:
+
+- **Increases** with bin crossings during swaps
+- **Increases** with swap frequency
+- **Decays** over time when activity slows
+
+This creates automatic surge pricing:
+- Quiet markets → low fees
+- Active/volatile markets → high fees
+
+### Why Dynamic Fees Matter
+
+**For LPs:**
+- Higher compensation during risky periods
+- Protection against toxic flow
+
+**For Traders:**
+- Lower costs during normal conditions
+- Discourages extractive strategies during volatility
+
+**For the Market:**
+- Natural equilibrium between LP risk and trader cost
+- Reduced manipulation incentives
+
+## LP Positions
+
+### Position Structure
+
+LP positions in Liquidity Book are represented by shares in specific bins:
+
+```
+Position: [
+  { binId: 8388608, shares: 1000000 },
+  { binId: 8388609, shares: 500000 },
+  { binId: 8388610, shares: 500000 }
+]
+```
+
+Each bin has its own share tracking, similar to ERC-1155 tokens.
+
+### Adding Liquidity
+
+LPs can add liquidity to:
+- Single bins (concentrated, higher risk/reward)
+- Multiple bins (distributed, lower risk/reward)
+- Custom distributions (strategy-specific)
+
+### Liquidity Shapes
+
+**Uniform:** Equal distribution across bins
+```
+[====][====][====][====][====]
+```
+
+**Concentrated:** Heavy in active bin, light on edges
+```
+[==][====][========][====][==]
+```
+
+**Bid-Ask:** Liquidity on sides, gap in middle
+```
+[========][====][  ][====][========]
+```
+
+### Fee Earning
+
+Only the active bin earns fees. As price moves:
+- Bins become active/inactive
+- Fee earning shifts accordingly
+- LPs in active bins capture all trading fees
+
+### Impermanent Loss
+
+IL in Liquidity Book differs from continuous AMMs:
+
+- **Within bin:** No IL (constant sum)
+- **Across bins:** Discrete IL as bins flip
+
+Concentrated positions have higher IL risk but higher fee potential. Distributed positions have lower IL but diluted fee capture.
+
+## Comparison Summary
+
+| Feature | Uniswap v2 | Uniswap v3 | Liquidity Book |
+|---------|------------|------------|----------------|
+| Curve | $xy=k$ | $xy=k$ (bounded) | $Px+y=L$ per bin |
+| Slippage | Always | Always | Zero in-bin |
+| Positions | Fungible | NFT | Semi-fungible |
+| Fees | 0.3% fixed | 0.05-1% fixed | Dynamic |
+| Complexity | Low | High | Medium |
+| Capital efficiency | Low | High | High |

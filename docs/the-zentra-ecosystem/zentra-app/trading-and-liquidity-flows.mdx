@@ -1,4 +1,66 @@
 ---
 title: 'Trading & Liquidity Flows'
+description: 'How tokens move from launch to active trading'
 ---
 
+## Overview
+
+Zentra App manages the transition from token launch to open market trading.
+
+This page explains how liquidity flows through the system.
+
+## Pre-Launch
+
+- Project configures token and launch parameters
+- Launch is announced and visible to participants
+- No trading occurs during this phase
+
+## During Launch
+
+- Participants contribute to the launch
+- Price adjusts based on demand (bonding curve)
+- Tokens are allocated proportionally
+- Liquidity accumulates for post-launch deployment
+
+## Launch Completion
+
+When the launch ends:
+
+1. Final token price is determined
+2. Tokens are distributed to participants
+3. Liquidity is prepared for Zentra X
+
+## Liquidity Deployment
+
+After launch completion:
+
+- Liquidity is deployed to DLMM pools on Zentra X
+- Bins are configured around the launch price
+- Trading is enabled immediately
+
+## Active Trading
+
+Once live on Zentra X:
+
+- Users can swap tokens freely
+- LPs can add additional liquidity
+- Dynamic fees adjust based on market activity
+- The DLMM engine manages bin liquidity
+
+## Flow Diagram
+
+```
+Participants → Launch Pool → Token Distribution
+                    ↓
+              Liquidity Pool
+                    ↓
+              Zentra X (DLMM)
+                    ↓
+              Open Trading
+```
+
+## Key Points
+
+- No manual liquidity bootstrapping required
+- Seamless transition from launch to trade
+- DLMM ensures efficient price discovery post-launch

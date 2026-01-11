@@ -1,0 +1,125 @@
+---
+title: 'Governance'
+description: 'veZTR voting model, staking, and incentive direction'
+---
+
+<Info>
+Governance is scheduled to launch in **Q1 2026**.
+</Info>
+
+## Overview
+
+ZentraFi is governed by token holders through a vote-escrowed governance system.
+
+Users stake ZTR tokens to receive **voting power (veZTR)** and **real yield (sZTR)** simultaneously.
+
+## Staking
+
+Staking ZTR is the foundation of ZentraFi governance.
+
+### What You Get
+
+| Benefit | Description |
+|---------|-------------|
+| **sZTR** | Share of protocol trading fees (real yield) |
+| **veZTR** | Voting power to direct emissions |
+
+### How It Works
+
+- Stake ZTR tokens at any time
+- No deposit or withdrawal fees
+- No lock-up periods — unstake whenever you want
+- Staking is unified: you earn both sZTR and veZTR automatically
+
+### sZTR: Revenue Sharing
+
+sZTR provides real yield derived from platform trading fees:
+
+- Fees are collected regularly from Zentra X
+- Converted to ZTR and distributed to stakers
+- Rewards proportional to your share of total staked ZTR
+
+**Reward Calculation:**
+```
+Your Reward Rate = (Your Staked ZTR / Total Staked ZTR) × sZTR Reward Rate
+```
+
+## veZTR: Voting Power
+
+veZTR is a non-transferable token representing your voting power within the protocol.
+
+### Accrual Mechanics
+
+- **Maximum veZTR:** 1000× your staked ZTR balance
+- **Accrual rate:** Linear, reaching maximum in 7 days
+- **Unstaking:** Resets your entire veZTR balance to zero
+
+<Warning>
+Unstaking any amount of ZTR will result in the loss of all accrued veZTR. You must also remove all active votes before unstaking.
+</Warning>
+
+### Topping Up
+
+Adding more ZTR to your stake:
+
+- Automatically claims pending sZTR rewards
+- Increases your veZTR maximum
+- New deposits begin accruing veZTR over 7 days
+
+## Gauges & Voting
+
+Gauges measure and distribute rewards to liquidity pools based on veZTR holder votes.
+
+### How Voting Works
+
+1. Stake ZTR and accrue veZTR
+2. Direct your veZTR votes to approved pools
+3. Pools with more votes receive higher ZTR emissions
+4. LPs in those pools earn more rewards
+
+### Voting Power Model
+
+ZentraFi uses a power model for counting votes:
+
+```
+Pool Weight = votes^(2/3)
+Emission Share = Pool Weight / Total Weight
+```
+
+This encourages broader participation across multiple pools rather than concentration on single options.
+
+### Key Rules
+
+- Split votes across multiple pools
+- Withdraw and redirect votes anytime
+- Changes take effect immediately
+- Remove all votes before unstaking
+
+## Voting Rewards
+
+A permissionless incentive layer where anyone can deposit tokens to reward voters.
+
+### How It Works
+
+1. Projects or users create Voting Reward Pools
+2. They deposit incentive tokens for a specific LP pool
+3. veZTR holders opt-in to earn rewards
+4. Rewards distributed proportionally to votes
+
+This creates additional yield opportunities beyond farm emissions — projects can incentivize liquidity by rewarding voters directly.
+
+<Info>
+Voting alone doesn't qualify you for rewards. You must opt-in to specific Voting Reward Pools.
+</Info>
+
+## What Governance Controls
+
+veZTR holders can vote on:
+
+- Liquidity incentives distribution
+- Supported markets and pools
+- Emission allocation
+- Treasury usage
+- Protocol parameters
+
+Governance is designed to reward **long-term alignment**, not short-term speculation.

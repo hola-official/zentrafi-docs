@@ -1,4 +1,58 @@
 ---
 title: 'How It Uses DLMM'
+description: 'How Zentra X leverages Dynamic Liquidity Market Maker technology'
 ---
 
+## DLMM in Zentra X
+
+Zentra X is built entirely on DLMM (Dynamic Liquidity Market Maker) technology.
+
+Every pool, every swap, and every liquidity position uses the DLMM engine.
+
+## Bin-Based Liquidity
+
+Instead of a continuous price curve, Zentra X organizes liquidity into discrete price bins.
+
+- Each bin represents a specific price point
+- Liquidity providers choose which bins to fill
+- Swaps execute within bins at zero slippage
+
+## How Swaps Work
+
+1. User initiates a swap
+2. DLMM routes through active bins
+3. Each bin provides liquidity at its fixed price
+4. If a bin is exhausted, the next bin activates
+5. Fees are collected and distributed to LPs
+
+## Dynamic Fee Mechanism
+
+Fees on Zentra X are not static:
+
+- **Base fee** — Set by pool configuration
+- **Variable fee** — Adjusts based on volatility
+
+During high volatility (like token launches), fees increase automatically.
+
+This:
+- Compensates LPs for increased risk
+- Discourages aggressive bot activity
+- Captures more value during peak demand
+
+## Concentrated Liquidity Benefits
+
+LPs on Zentra X can concentrate their capital:
+
+- Focus liquidity around current price
+- Earn more fees per dollar deposited
+- Reduce exposure to unused price ranges
+
+## Launch Pool Integration
+
+For tokens launched on Zentra App:
+
+- DLMM pools are created automatically
+- Initial liquidity is placed in optimal bins
+- Trading activates immediately
+
+This makes Zentra X the natural trading venue for all Zentra App launches.
