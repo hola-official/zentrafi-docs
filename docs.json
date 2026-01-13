@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "aspen",
+  "theme": "mint",
   "name": "ZentraFi docs",
   "colors": {
     "primary": "#004581",
@@ -128,7 +128,7 @@
   },
   "description": "ZentraFi: The native liquidity layer and trading hub for Pharos",
   "background": {
-    "decoration": "grid"
+    "decoration": "windows"
   },
   "appearance": {
     "default": "system"
