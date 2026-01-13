@@ -13,7 +13,7 @@
       "anchors": [
         {
           "anchor": "Trade now",
-          "icon": "industry-windows",
+          "icon": "chart-mixed",
           "color": {
             "light": "#0d1a36",
             "dark": "#0d1a36"
@@ -22,7 +22,7 @@
         },
         {
           "anchor": "Community",
-          "icon": "newspaper",
+          "icon": "users",
           "color": {
             "light": "#0d1a36",
             "dark": "#0d1a36"
