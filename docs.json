@@ -130,7 +130,7 @@
   },
   "description": "Guide for sailors exploring ZentraFi",
   "background": {
-    "decoration": "gradient"
+    "decoration": "grid"
   },
   "appearance": {
     "default": "system"
