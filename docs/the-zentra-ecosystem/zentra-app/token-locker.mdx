@@ -1,0 +1,114 @@
+---
+title: 'Token Locker'
+description: 'Lock tokens and LP tokens with flexible vesting schedules'
+---
+
+Zentra App includes a Token Locker for projects and teams to lock tokens, building trust with their community by proving long-term commitment.
+
+## Lock Types
+
+### Standard Lock
+
+Lock tokens until a specific date. When the date arrives, unlock everything at once.
+
+**Use cases:**
+- Team token lockups
+- Liquidity locks
+- Investor vesting with cliff
+
+---
+
+### Vesting Lock
+
+Lock tokens with gradual release over time. Tokens unlock in stages based on your schedule.
+
+**How it works:**
+
+1. **TGE Release** — A percentage unlocks on the start date
+2. **Cycle Releases** — Additional percentage unlocks at regular intervals
+
+**Example:**
+- Lock 1,000,000 tokens
+- TGE: 10% (100,000 tokens available on start date)
+- Cycle: 30 days at 15% each
+- Result: 100k at launch, then 150k every month until fully vested
+
+---
+
+## Supported Tokens
+
+| Token Type | Description |
+|------------|-------------|
+| **Regular Tokens** | Any ERC-20 token |
+| **LP Tokens** | Liquidity pool tokens from DEX pairs |
+
+---
+
+## Features
+
+### Extend or Increase
+
+After creating a lock, you can:
+- **Extend unlock date** — Push the unlock further into the future
+- **Increase amount** — Add more tokens to the lock
+
+<Warning>
+You cannot reduce the locked amount or shorten the unlock date.
+</Warning>
+
+### Transfer Ownership
+
+Transfer your lock to another wallet address. Useful for:
+- Moving locks to a multisig
+- Transferring to a new team wallet
+- Selling vested positions (OTC)
+
+### Renounce Ownership
+
+Permanently give up control of a lock. The tokens will unlock on schedule but nobody can modify the lock. This proves maximum commitment.
+
+### Batch Vesting
+
+Create multiple vesting locks in one transaction — useful for team allocations where each member has the same vesting schedule but different amounts.
+
+---
+
+## Fees
+
+| Action | Fee |
+|--------|-----|
+| Creating a lock | Free |
+| Unlocking tokens | 1% of unlocked amount |
+
+---
+
+## Why Lock Tokens?
+
+**For Projects:**
+- Prove team commitment by locking team tokens
+- Lock liquidity to show you won't rug
+- Set up transparent investor vesting
+
+**For Investors:**
+- Verify team tokens are actually locked
+- Check liquidity lock duration
+- See vesting schedules on-chain
+
+---
+
+## Creating a Lock
+
+1. Go to Token Locker on Zentra App
+2. Select token type (Regular or LP)
+3. Enter token address and amount
+4. Choose lock type:
+   - **Standard**: Set unlock date
+   - **Vesting**: Set TGE date, TGE %, cycle duration, cycle %
+5. Add description (optional)
+6. Confirm transaction
+
+Your lock is now visible on-chain and verifiable by anyone.
+
+<Card title="Lock Tokens" icon="lock" href="https://app.zentrafi.xyz/lock">
+  Create a token lock on Zentra App
+</Card>

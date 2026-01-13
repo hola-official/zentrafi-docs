@@ -74,14 +74,17 @@
                 "group": "Zentra App",
                 "pages": [
                   "docs/the-zentra-ecosystem/zentra-app/user-experience-overview",
+                  "docs/the-zentra-ecosystem/zentra-app/token-types",
+                  "docs/the-zentra-ecosystem/zentra-app/token-locker",
+                  "docs/the-zentra-ecosystem/zentra-app/airdrop",
                   "docs/the-zentra-ecosystem/zentra-app/trading-and-liquidity-flows"
                 ]
               },
               {
                 "group": "Zentra X (DEX)",
                 "pages": [
-                  "docs/the-zentra-ecosystem/zentra-dex-zentra-x/what-it-is",
-                  "docs/the-zentra-ecosystem/zentra-X-zentra-dex/how-it-uses-dlmm"
+                  "docs/the-zentra-ecosystem/zentra-x-zentra-dex/what-it-is",
+                  "docs/the-zentra-ecosystem/zentra-x-zentra-dex/how-it-uses-dlmm"
                 ]
               }
             ]
@@ -94,7 +97,8 @@
               "docs/governance-and-tokenomics/tokenomics"
             ]
           },
-          "docs/roadmap"
+          "docs/roadmap",
+          "docs/faq"
         ]
       }
     ]

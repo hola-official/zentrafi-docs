@@ -1,0 +1,105 @@
+---
+title: 'Token Types'
+description: 'Choose the right token type for your project launch'
+---
+
+When launching on Zentra App, you select a token type that matches your project's needs. Each type offers different features and tokenomics options.
+
+## Available Token Types
+
+### Standard Token
+
+The simplest option for projects that just need a basic token.
+
+**Features:**
+- Custom name, symbol, and decimals
+- Fixed total supply
+- No additional mechanics
+
+**Best for:** Simple utility tokens, governance tokens, or projects handling tokenomics externally.
+
+---
+
+### Tax Token
+
+Adds buy/sell fees that automatically collect to a designated wallet.
+
+**Features:**
+- Configurable buy fee
+- Configurable sell fee
+- Tax recipient address for fee collection
+- Automatic DEX pair creation
+
+**Best for:** Projects wanting passive revenue from trading activity.
+
+---
+
+### Advanced Token
+
+Full-featured tokenomics with multiple fee mechanisms and controls.
+
+**Features:**
+- Buy/sell tax fees
+- Holder rewards (in tokens or native currency)
+- Auto-liquidity generation
+- Token burning on transactions
+- Maximum transaction limits
+- Maximum wallet limits
+- Whitelist for fee exemption
+
+**Best for:** Projects wanting comprehensive tokenomics with rewards, anti-whale measures, and automatic liquidity growth.
+
+---
+
+### Bonding Token
+
+Designed specifically for bonding curve launches.
+
+**Features:**
+- Optimized for bonding pool mechanics
+- Upgradeable contract design
+- Used with adaptive price discovery
+
+**Best for:** Fair launches using bonding curves on Zentra App.
+
+---
+
+## Quick Comparison
+
+| Feature | Standard | Tax | Advanced | Bonding |
+|---------|:--------:|:---:|:--------:|:-------:|
+| Custom supply | ✓ | ✓ | ✓ | ✓ |
+| Buy/sell fees | — | ✓ | ✓ | — |
+| Holder rewards | — | — | ✓ | — |
+| Auto-liquidity | — | — | ✓ | — |
+| Token burning | — | — | ✓ | — |
+| Transaction limits | — | — | ✓ | — |
+| Wallet limits | — | — | ✓ | — |
+| Whitelist | — | — | ✓ | — |
+| Bonding curve ready | — | — | — | ✓ |
+
+## Choosing Your Token Type
+
+```
+Do you need buy/sell fees?
+├── No → Standard Token
+└── Yes
+    ├── Just fees? → Tax Token
+    └── Fees + rewards/limits/burns? → Advanced Token
+
+Using a bonding curve launch?
+└── Yes → Bonding Token
+```
+
+## What Happens After Launch
+
+Once your token launches:
+
+1. **Liquidity is seeded** automatically to Zentra X
+2. **Trading activates** immediately on DLMM pools
+3. **Fee mechanisms** (if applicable) activate on trades
+4. **You receive** remaining tokens and raised funds per your configuration
+
+<Card title="Launch a Token" icon="rocket" href="https://app.zentrafi.xyz/token">
+  Start creating your token on Zentra App
+</Card>

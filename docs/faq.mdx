@@ -1,0 +1,207 @@
+---
+title: 'FAQ & Troubleshooting'
+description: 'Common questions and solutions for ZentraFi users'
+---
+
+## Trading on Zentra X
+
+### I swapped tokens but can't see them in my wallet
+
+You may need to manually add the token's contract address to your wallet:
+1. Find the token's contract address on the pool or token page
+2. In your wallet, select "Import Token" or "Add Custom Token"
+3. Paste the contract address and confirm
+
+### My swap failed or was reverted
+
+During high volatility, transactions may revert due to price changes between bins. Try:
+- **Increase slippage tolerance** — Use the settings icon to adjust
+- **Reduce trade size** — Large trades cross multiple bins and are more likely to revert
+- **Retry in a few minutes** — Wait for volatility to settle
+
+<Info>
+Tokens with buy/sell taxes may require higher slippage (up to 20% depending on the token's fee structure).
+</Info>
+
+### Why did I receive slightly fewer tokens than expected?
+
+Zentra X uses dynamic fees that increase during volatile periods:
+- **Base fee**: Minimum trading cost
+- **Variable fee**: Increases when many bins are crossed or during high activity
+
+This "surge pricing" compensates LPs for increased risk during volatility.
+
+### A failed transaction took my tokens
+
+Failed transactions only deduct gas fees. All other tokens revert to your wallet. If you believe tokens are missing:
+1. Check your transaction history on the block explorer
+2. Verify the token is added to your wallet
+3. Contact support via [Discord](https://linktr.ee/zentrafi) if issues persist
+
+---
+
+## Providing Liquidity (DLMM)
+
+### Why am I not earning fees?
+
+Only the **active bin** earns trading fees. If price has moved away from your position:
+- Your liquidity is "out of range"
+- You won't earn fees until price returns to your bins
+- Consider rebalancing your position closer to the current price
+
+### What are the different liquidity shapes?
+
+| Shape | Description | Best For |
+|-------|-------------|----------|
+| **Spot** | Uniform distribution across bins | Stable pairs, passive LPs |
+| **Curve** | Concentrated around current price | Active management, higher fees |
+| **Bid-Ask** | Split on either side of price | Market making strategies |
+
+See [Liquidity Shapes](/docs/products/zentra-x/liquidity-shapes) for details.
+
+### My LP position shows a small amount
+
+LP shares are proportional to total pool liquidity. With large pools, individual shares appear minimal but still represent your actual ownership percentage.
+
+### How do I know if I'm earning fees?
+
+- Fees accrue directly to your position in the active bin
+- Check your position value over time
+- Use portfolio trackers to monitor gains
+- Compare your position value when removing liquidity vs. when you added
+
+### What is impermanent loss in DLMM?
+
+When price moves significantly:
+- Your position composition changes (more of one token, less of the other)
+- If price moves away and doesn't return, you may have less value than simply holding
+
+More concentrated positions = higher fees when in range, but higher impermanent loss risk.
+
+---
+
+## Zentra App (Launchpad)
+
+### I can't find a launch
+
+- Check all tabs: **Active**, **Upcoming**, and **Completed**
+- Verify the launch hasn't ended
+- Some launches may have participation requirements
+
+### I participated but can't claim my tokens
+
+Tokens are claimable only **after the launch completes**:
+1. Wait for the launch to finalize
+2. Navigate to "Your Launches" or the launch page
+3. Click "Claim Tokens"
+4. Confirm the transaction
+
+### The launch failed — how do I get a refund?
+
+If a launch doesn't reach its soft cap:
+1. Launch is marked as "Failed"
+2. Go to the launch page
+3. Click "Claim Refund"
+4. Your full contribution is returned
+
+### Why did my token price change during purchase?
+
+Zentra App uses **adaptive pricing** (bonding curves):
+- Price increases as more people participate
+- Your final token amount depends on the price when your transaction executes
+- This is normal and ensures fair price discovery
+
+---
+
+## Token Locker
+
+### What's the difference between Standard and Vesting locks?
+
+| Type | How it works |
+|------|--------------|
+| **Standard** | All tokens unlock on a single date |
+| **Vesting** | Tokens unlock gradually (TGE + periodic cycles) |
+
+### Why is there a 1% unlock fee?
+
+The 1% fee is charged when unlocking tokens (not when creating locks). This fee supports protocol operations.
+
+### Can I modify my lock?
+
+You can:
+- ✅ Extend the unlock date
+- ✅ Increase the locked amount
+- ✅ Transfer ownership to another wallet
+- ✅ Renounce ownership (permanent)
+
+You cannot:
+- ❌ Reduce the locked amount
+- ❌ Shorten the unlock date
+
+### My veZTR reset to zero — what happened?
+
+If you're staking ZTR for veZTR:
+- **Unstaking any amount resets your entire veZTR balance to zero**
+- veZTR takes 7 days to reach maximum (1000x)
+- This is by design to reward long-term stakers
+
+---
+
+## Airdrop Tool
+
+### My airdrop transaction failed
+
+Common causes:
+- **Insufficient balance** — Ensure you have enough tokens + gas + service fee
+- **Too many recipients** — Maximum 1,000 recipients per transaction
+- **Token approval** — Make sure you've approved the total airdrop amount
+
+### Can I undo an airdrop?
+
+<Warning>
+Airdrops are irreversible. Once sent, tokens cannot be recovered if sent to wrong addresses. Always double-check recipient addresses before confirming.
+</Warning>
+
+---
+
+## Wallet & General Issues
+
+### I sent tokens to a contract address
+
+Tokens sent directly to contract addresses are typically **unrecoverable**. Contracts aren't designed to receive direct sends. Always use the proper interface (Zentra X, Zentra App) to interact with the protocol.
+
+### My tokens/positions disappeared
+
+1. Check your transaction history on the block explorer
+2. Verify you're connected to the correct wallet
+3. Ensure you're on the correct network (Pharos)
+4. If tokens transferred to unknown wallets, your wallet may be compromised
+
+<Warning>
+**Security tips:**
+- Use hardware wallets for large amounts
+- Never share your seed phrase or private keys
+- Regularly review and revoke unnecessary token approvals
+- Be cautious of phishing sites — always verify you're on zentrafi.xyz
+</Warning>
+
+### The site isn't loading properly
+
+Try these steps:
+1. Clear browser cache and site data
+2. Disable conflicting browser extensions (especially multiple wallet extensions)
+3. Try a different browser
+4. Check if you have ad blockers interfering
+
+---
+
+## Still Need Help?
+
+<CardGroup cols={2}>
+  <Card title="Community" icon="discord" href="https://linktr.ee/zentrafi">
+    Join our Discord for support
+  </Card>
+  <Card title="Twitter" icon="x-twitter" href="https://x.com/zentrafi">
+    Follow for updates
+  </Card>
+</CardGroup>
