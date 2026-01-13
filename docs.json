@@ -39,32 +39,32 @@
           {
             "group": "What is ZentraFi?",
             "pages": [
-              "docs/what-is-zentra-fi/vision",
-              "docs/what-is-zentra-fi/why-zentra-fi-exists",
-              "docs/how-launchpad-dlmm-fit-together"
+              "what-is-zentra-fi/vision",
+              "what-is-zentra-fi/why-zentra-fi-exists",
+              "how-launchpad-dlmm-fit-together"
             ]
           },
           {
             "group": "The ZentraFi Architecture",
             "pages": [
-              "docs/the-zentra-fi-architecture/zentra-fi-stack",
-              "docs/the-zentra-fi-architecture/core-components"
+              "the-zentra-fi-architecture/zentra-fi-stack",
+              "the-zentra-fi-architecture/core-components"
             ]
           },
           {
             "group": "Core Concepts",
             "pages": [
-              "docs/core-concepts/dynamic-liquidity-market-maker-dlmm",
-              "docs/products/zentra-x/dynamic-liquidity-market-maker",
-              "docs/products/zentra-x/liquidity-shapes",
-              "docs/products/zentra-x/dlmm-concepts"
+              "core-concepts/dynamic-liquidity-market-maker-dlmm",
+              "products/zentra-x/dynamic-liquidity-market-maker",
+              "products/zentra-x/liquidity-shapes",
+              "products/zentra-x/dlmm-concepts"
             ]
           },
           {
             "group": "Launch Mechanics",
             "pages": [
-              "docs/launch-mechanics/adaptive-price-discovery-bonding-curve",
-              "docs/fair-launch-design"
+              "launch-mechanics/adaptive-price-discovery-bonding-curve",
+              "fair-launch-design"
             ]
           },
           {
@@ -73,18 +73,18 @@
               {
                 "group": "Zentra App",
                 "pages": [
-                  "docs/the-zentra-ecosystem/zentra-app/user-experience-overview",
-                  "docs/the-zentra-ecosystem/zentra-app/token-types",
-                  "docs/the-zentra-ecosystem/zentra-app/token-locker",
-                  "docs/the-zentra-ecosystem/zentra-app/airdrop",
-                  "docs/the-zentra-ecosystem/zentra-app/trading-and-liquidity-flows"
+                  "the-zentra-ecosystem/zentra-app/user-experience-overview",
+                  "the-zentra-ecosystem/zentra-app/token-types",
+                  "the-zentra-ecosystem/zentra-app/token-locker",
+                  "the-zentra-ecosystem/zentra-app/airdrop",
+                  "the-zentra-ecosystem/zentra-app/trading-and-liquidity-flows"
                 ]
               },
               {
                 "group": "Zentra X (DEX)",
                 "pages": [
-                  "docs/the-zentra-ecosystem/zentra-x-zentra-dex/what-it-is",
-                  "docs/the-zentra-ecosystem/zentra-x-zentra-dex/how-it-uses-dlmm"
+                  "the-zentra-ecosystem/zentra-x-zentra-dex/what-it-is",
+                  "the-zentra-ecosystem/zentra-x-zentra-dex/how-it-uses-dlmm"
                 ]
               }
             ]
@@ -92,13 +92,12 @@
           {
             "group": "Governance & Tokenomics",
             "pages": [
-              "docs/governance-and-tokenomics/governance",
-              "docs/governance-and-tokenomics/farming",
-              "docs/governance-and-tokenomics/tokenomics"
+              "governance-and-tokenomics/governance",
+              "governance-and-tokenomics/farming",
+              "governance-and-tokenomics/tokenomics"
             ]
           },
-          "docs/roadmap",
-          "docs/faq"
+          "roadmap"
         ]
       }
     ]
@@ -114,12 +113,11 @@
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "mcp"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   },
   "footer": {
     "socials": {
@@ -128,7 +126,7 @@
       "linkedin": "https://ng.linkedin.com/company/zentrafi"
     }
   },
-  "description": "Guide for sailors exploring ZentraFi",
+  "description": "ZentraFi: The native liquidity layer and trading hub for Pharos",
   "background": {
     "decoration": "grid"
   },
