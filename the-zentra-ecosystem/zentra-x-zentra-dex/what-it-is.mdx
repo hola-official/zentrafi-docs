@@ -1,200 +1,246 @@
 ---
 title: 'Zentra X'
-description: 'The DLMM-powered decentralized exchange on Pharos'
+description: 'The DLMM-powered DEX where your capital actually works'
 ---
 
-## What is Zentra X?
+## Why Another DEX?
 
-Zentra X is ZentraFi's decentralized exchange: a trading platform built on the Liquidity Book model that enables efficient swaps with zero slippage within price bins.
+You've used Uniswap. You've tried SushiSwap. Why should you care about Zentra X?
 
-Unlike traditional AMMs that spread liquidity across infinite prices, Zentra X concentrates capital in discrete bins, maximizing efficiency for traders and LPs alike.
+**Because traditional AMMs are wasting your money.**
 
-## Key Characteristics
+When you provide liquidity on a constant product AMM, roughly 95% of your capital sits idle at prices that will never be reached. You're spreading a bucket of water across a football field when you could be filling a glass.
+
+Zentra X changes the economics.
+
+## What Makes Zentra X Different
+
+### For Traders: Zero Slippage (Really)
+
+On traditional AMMs, every trade pushes you up or down a curve. The bigger your trade, the worse your price.
+
+**On Zentra X, trades within a bin execute at exactly the bin's price.**
+
+```
+Traditional AMM:
+Buy $50,000 of ETH at $2,000
+├── First $10k gets you ETH at $2,000
+├── Next $10k gets you ETH at $2,005
+├── Next $10k gets you ETH at $2,012
+├── Last $20k gets you ETH at $2,025 average
+└── You lost ~$600 to slippage
+
+Zentra X:
+Buy $50,000 of ETH at $2,000 bin
+├── All $50k executes at exactly $2,000
+├── You get exactly what you expected
+└── Slippage: $0
+```
+
+The price only moves when you exhaust a bin and move to the next one. For most trades, that means zero slippage.
+
+### For LPs: Your Money Works Harder
+
+| Platform | Your $10,000 | Actually Working |
+|----------|--------------|------------------|
+| Uniswap V2 | Spread $0 to ∞ | ~$200 (2%) |
+| Uniswap V3 | Custom range | ~$5,000 (50%) |
+| **Zentra X** | Concentrated bins | **Up to $10,000 (100%)** |
+
+More capital working = more fees earned per dollar deposited.
+
+### For LPs: Hazard Pay During Crashes
+
+Here's the feature that matters most to serious liquidity providers:
+
+**Dynamic fees that surge during volatility.**
+
+Traditional AMMs charge a flat 0.3% fee whether the market is calm or crashing. Zentra X automatically raises fees when:
+- Price is moving fast (lots of bin crossings)
+- Trading volume spikes
+- Volatility increases
+
+```
+Market crash scenario:
+
+Traditional AMM:
+├── Arbitrageurs extract 5% of pool value
+├── They pay 0.3% fee
+├── You net: -4.7% loss
+└── Thanks for playing
+
+Zentra X:
+├── Dynamic fees spike to 2%+
+├── Arbitrageurs still come (they always do)
+├── They pay 2%+ per trade
+└── You're compensated for the chaos
+```
+
+This is hazard pay for your capital. When the market burns, you get paid for standing in the fire.
+
+## How It Works
 
 ### Discretized Liquidity
 
-Liquidity exists at specific price points, not across a curve:
+Instead of a continuous curve, liquidity exists at specific price points (bins):
 
 ```
 Traditional AMM:
 Price ──────────────────────────►
       ╲                        ╱
-        ╲                    ╱
-          ╲                ╱
+        ╲                    ╱     ← Your liquidity
+          ╲                ╱         (infinitely thin)
             ────────────
 
-Zentra X (Liquidity Book):
+Zentra X:
 Price ──────────────────────────►
       [  ][  ][  ][██][  ][  ][  ]
                    ↑
-             Active Bin
+             Active Bin          ← Your liquidity
+            (concentrated)          (stacked deep)
 ```
 
-### Zero-Slippage Trading
+### Bin Structure
 
-Trades within a single bin execute at exactly the bin's price:
-- Small trades: zero price impact
-- Large trades: cross multiple bins at their respective prices
+Each bin holds liquidity at exactly one price:
+- **Active bin**: Contains both tokens, earns all trading fees
+- **Left of active**: Only quote token (ready to buy)
+- **Right of active**: Only base token (ready to sell)
+
+When trading exhausts the active bin, price moves to the next bin.
 
 ### Dynamic Fees
 
-Fees respond to market conditions:
-- Base fee: minimum trading cost
-- Variable fee: increases with volatility
-- Automatic surge pricing during high activity
+Fees automatically adjust based on market conditions:
 
-### Capital Efficiency
+$$
+\text{Total Fee} = \text{Base Fee} + \text{Variable Fee}
+$$
 
-LPs concentrate capital where it's used:
-- No idle liquidity at unrealistic prices
-- Higher fee capture per dollar deposited
-- Better returns for active capital
+| Condition | Variable Fee | Why |
+|-----------|--------------|-----|
+| Low volatility | Near zero | Competitive rates attract volume |
+| Moderate activity | Small addition | Slight LP compensation |
+| High volatility | Significant spike | Hazard pay for LPs |
+| Market chaos | Maximum | Full protection mode |
 
-## Core Functions
+## Comparison: Know Your Options
 
-### Trading (Swaps)
+### vs. Uniswap V2 (Constant Product)
 
-Execute token swaps with predictable pricing:
-
-| Feature | Description |
-|---------|-------------|
-| Swap types | Exact input, exact output |
-| Routing | Multi-hop through multiple pools |
-| Slippage | Zero within bins, minimal across bins |
-| Fees | Dynamic based on volatility |
-
-### Liquidity Provision
-
-Provide liquidity and earn trading fees:
-
-| Feature | Description |
-|---------|-------------|
-| Position type | Bin-based allocation |
-| Shapes | Spot, Curve, Bid-Ask, Custom |
-| Fee earning | Active bin only |
-| Management | Rebalance as needed |
-
-### Pool Creation
-
-Create new trading pairs (permissionless after protocol launch):
-
-| Feature | Description |
-|---------|-------------|
-| Pair creation | Token X / Token Y |
-| Bin step | Price increment (1-100+ bps) |
-| Fee preset | Base and variable parameters |
-| Initial liquidity | Required at creation |
-
-## How Zentra X Differs
-
-### vs. Constant Product AMMs (Uniswap v2)
-
-| Aspect | Uniswap v2 | Zentra X |
+| Aspect | Uniswap V2 | Zentra X |
 |--------|------------|----------|
-| Price curve | $xy=k$ | Discrete bins |
+| Capital efficiency | 2-5% | Up to 100% |
 | Slippage | Every trade | Zero in-bin |
-| LP positions | Fungible | Per-bin shares |
-| Capital efficiency | ~2-5% | Up to 100% |
 | Fees | Fixed 0.3% | Dynamic |
+| LP positions | Fungible tokens | Per-bin shares |
+| Volatility protection | None | Dynamic fee surge |
 
-### vs. Concentrated Liquidity (Uniswap v3)
+### vs. Uniswap V3 (Concentrated)
 
-| Aspect | Uniswap v3 | Zentra X |
+| Aspect | Uniswap V3 | Zentra X |
 |--------|------------|----------|
-| Price representation | Ticks on curve | Discrete bins |
-| Position tracking | NFTs | Semi-fungible |
-| Out-of-range behavior | No fees | Clear bin state |
-| Complexity | High | Medium |
+| Position tracking | NFTs (complex) | Semi-fungible (simpler) |
 | Fee model | Fixed tiers | Dynamic |
+| Volatility protection | None | Dynamic fee surge |
+| Out-of-range visibility | Confusing | Clear bin state |
+| Complexity | High | Medium |
 
 ### vs. Order Books
 
 | Aspect | Order Book | Zentra X |
 |--------|------------|----------|
-| Liquidity type | Limit orders | Pooled bins |
-| Price discovery | Bid/ask spread | Active bin |
-| Execution | Match orders | Swap against pool |
-| Capital requirement | Per-order | Pooled |
+| Liquidity type | Individual orders | Pooled bins |
+| Capital efficiency | Order-by-order | Pooled and concentrated |
+| Price discovery | Bid/ask matching | Active bin trading |
+| LP experience | Market making | Passive possible |
 
-## Supported Operations
+## Zentra X + Launchpad: The Full Picture
 
-### For Traders
+When tokens launch on Zentra App and graduate, they don't just "list" on Zentra X. The liquidity flows directly into Liquidity Book bins.
 
-- **Market swaps**: Trade at current market price
-- **Multi-hop routing**: Path through multiple pools
-- **Price quotes**: Preview execution before trading
-- **Slippage protection**: Set maximum acceptable slippage
+```
+Launch Phase (Bonding Curve)
+        │
+        │ Token reserve < 20%
+        ▼
+Graduation Trigger
+        │
+        ├── 1. Transfer restrictions lift
+        ├── 2. sZTR holders paid (10%)
+        └── 3. Liquidity seeds into bins
+                    │
+                    ▼
+            ┌─────────────────────┐
+            │     Zentra X        │
+            │                     │
+            │  [  ][  ][██][  ]   │
+            │        ↑            │
+            │   Active Bin        │
+            │  (graduation price) │
+            └─────────────────────┘
+```
 
-### For LPs
-
-- **Add liquidity**: Deposit to specific bins
-- **Remove liquidity**: Withdraw from positions
-- **Claim fees**: Collect accumulated trading fees
-- **Rebalance**: Adjust positions as price moves
-
-### For Builders
-
-- **Pool queries**: Read pool state and pricing
-- **Swap integration**: Execute swaps from contracts
-- **LP automation**: Programmatic position management
-- **Analytics**: Historical data and metrics
+**Why this matters:** The first trades after launch get zero slippage. No bot wars. No front-running. The liquidity is already in bins at known prices.
 
 ## Pool Types
 
 ### Standard Pools
 
-General-purpose pools for any token pair:
-- Configurable bin step
+Permissionless pools for any token pair:
+- Any ERC-20 tokens
+- Configurable bin step (1-100+ bps)
 - Standard fee presets
-- Permissionless creation
 
 ### Launch Pools
 
-Pools seeded from Zentra App launches:
-- Initial liquidity from launch proceeds
-- Concentrated around launch price
-- Automatic creation on launch completion
+Pools created from Zentra App graduations:
+- Liquidity from launch proceeds
+- Concentrated around graduation price
+- Automatic creation (no setup required)
 
 ### Incentivized Pools
 
 Pools receiving ZTR emissions:
-- Voted on by veZTR holders
-- Additional rewards for LPs
-- Higher effective APY
+- veZTR holders vote to direct rewards
+- Additional APY for LPs
+- Strategic liquidity deepening
 
 ## Technical Specs
 
+### Bin Step Options
+
+| Bin Step | Increment | Use Case | Trade-off |
+|----------|-----------|----------|-----------|
+| 1 bp | 0.01% | Stablecoins | Narrow range, active management |
+| 10 bp | 0.1% | Major pairs | Balanced |
+| 25 bp | 0.25% | Standard tokens | Default choice |
+| 100 bp | 1% | Volatile/new | Wide coverage, lower volume |
+
 ### Supported Tokens
 
-- ERC-20 standard tokens
+- Standard ERC-20 tokens
 - Rebasing tokens (with caveats)
 - Fee-on-transfer tokens (with caveats)
 
-### Bin Configuration
+## The Bottom Line
 
-| Bin Step | Use Case | Price Granularity |
-|----------|----------|-------------------|
-| 1 bp | Stablecoins | 0.01% |
-| 10 bp | Major pairs | 0.1% |
-| 25 bp | Standard | 0.25% |
-| 100 bp | Volatile | 1% |
+Zentra X isn't just another DEX. It's a rethink of how AMMs should work:
 
-### Fee Presets
+| Feature | Traditional AMMs | Zentra X |
+|---------|------------------|----------|
+| Your capital | Mostly idle | Mostly working |
+| Slippage | Guaranteed | Zero in-bin |
+| Volatility | LPs get wrecked | LPs get paid |
+| Launch integration | Separate process | Seamless graduation |
 
-| Preset | Base Factor | Variable Control | Typical Use |
-|--------|-------------|------------------|-------------|
-| Stable | Low | Low | USDC/USDT |
-| Standard | Medium | Medium | ETH/USDC |
-| Volatile | High | High | New tokens |
-
-## Getting Started
+Stop leaving money on the table. Start using a DEX designed for capital efficiency.
 
 <CardGroup cols={2}>
-  <Card title="Trade" icon="arrow-right-arrow-left" href="https://x.zentrafi.xyz">
-    Execute swaps on Zentra X
+  <Card title="Trade Now" icon="arrow-right-arrow-left" href="https://x.zentrafi.xyz">
+    Experience zero-slippage swaps
   </Card>
-
-  <Card title="Provide Liquidity" icon="droplet" href="/docs/products/zentra-x/dynamic-liquidity-market-maker">
-    Learn how to LP effectively
+  <Card title="Learn LP Strategies" icon="chart-pie" href="/products/zentra-x/liquidity-shapes">
+    Choose the right shape for your goals
   </Card>
 </CardGroup>

@@ -1,252 +1,314 @@
 ---
 title: 'Fair Launch Design'
-description: 'Principles and mechanisms for equitable token distribution'
+description: 'Anti-manipulation mechanisms and fee structures for equitable token distribution'
 ---
 
 ## What Makes a Launch "Fair"?
-
-Fair launches are often defined by what they avoid: no VC allocations, no insider deals, no pre-mines. But avoiding bad practices isn't the same as implementing good ones.
 
 A truly fair launch requires:
 
 1. **Equal access**: Anyone can participate under the same rules
 2. **Transparent pricing**: No hidden information advantages
-3. **Proportional allocation**: Contribution determines share
-4. **Immediate utility**: Tokens work from day one
+3. **Bot resistance**: Automated trading provides no unfair edge
+4. **Immediate utility**: Tokens gain full utility upon graduation
 
-ZentraFi's launch infrastructure is designed around these principles.
+ZentraFi's launchpad enforces these principles through smart contract mechanics.
 
-## Design Principles
+## Anti-Sniper Protection
 
-### 1. No Privileged Access
+The launchpad implements **time-based anti-sniper tax** that heavily penalizes early automated trades while rewarding patient participants.
 
-Traditional launches often have hidden layers:
-- Seed rounds at lower prices
-- Team allocations that vest differently
-- Whitelist spots distributed through connections
+### How It Works
 
-ZentraFi launches operate on a single rule set:
-- One price curve for everyone
-- Public parameters visible before launch
-- No off-chain allocation mechanisms
+A decaying tax applies to trades immediately after launch:
 
-### 2. Information Symmetry
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `antiSniperEnabled` | true | Toggle protection |
+| `antiSniperDuration` | 30 seconds | Tax decay window |
+| `MAX_ANTI_SNIPER_TAX_BPS` | 9400 (94%) | Starting tax rate |
 
-Fair markets require equal information. ZentraFi provides:
+### Tax Decay
 
-**Before launch:**
-- Full curve parameters
-- Cap structures
-- Liquidity allocation %
-- Token contract details
+The tax decays **linearly** from maximum to zero:
 
-**During launch:**
-- Real-time price
-- Tokens sold
-- Time remaining
-- Participant count
+| Time After Launch | Tax Rate |
+|-------------------|----------|
+| 0 seconds | 94% |
+| 7.5 seconds | 70.5% |
+| 15 seconds | 47% |
+| 22.5 seconds | 23.5% |
+| 30 seconds | 0% |
 
-**After launch:**
-- Final distribution data
-- Liquidity pool address
-- Trading metrics
+### Economic Impact
 
-### 3. Economic Alignment
+At launch with maximum anti-sniper tax (94%) plus buy fee (1%):
 
-Launch mechanics should align incentives:
+```
+User pays: 100 WPROS
+Reaches pool: 5 WPROS
+Goes to fees/treasury: 95 WPROS
+```
 
-| Actor | Aligned Incentive |
-|-------|-------------------|
-| Project | High participation, stable post-launch |
-| Early buyers | Price appreciation potential |
-| Late buyers | Proven demand validation |
-| LPs | Immediate fee-earning opportunity |
+After anti-sniper period (just 1% buy fee):
 
-The adaptive curve creates natural equilibrium: early risk is rewarded, late certainty costs more.
+```
+User pays: 100 WPROS
+Reaches pool: 99 WPROS
+Goes to fees: 1 WPROS
+```
 
-### 4. Instant Market Formation
+<Warning>
+The total fee is capped at 95% (`MAX_TOTAL_FEE_BPS`), ensuring users always receive some value even during the anti-sniper window.
+</Warning>
 
-Tokens without markets aren't useful. ZentraFi ensures:
+### Why This Works
 
-- **Automatic liquidity seeding** from launch proceeds
-- **Immediate trading** when launch completes
-- **No bootstrapping gap** between distribution and utility
+| Attack Type | How Anti-Sniper Defeats It |
+|-------------|---------------------------|
+| **MEV bots** | 94% tax makes front-running unprofitable |
+| **Sniper bots** | Instant buys lose most value to tax |
+| **Flash loans** | Tax captures most borrowed capital |
+| **Insider timing** | No speed advantage; patience wins |
 
-## Fair Launch Types
+## Fee Structure
 
-### Community Launch
+### Trading Fees
 
-**Configuration:**
-- Linear or sigmoid curve
-- Lower curve steepness
-- Higher liquidity allocation (80%+)
-- Longer duration
+| Fee Type | Default | Range |
+|----------|---------|-------|
+| `buyFeeBps` | 100 (1%) | 0-1000 (0-10%) |
+| `sellFeeBps` | 200 (2%) | 0-1000 (0-10%) |
+| `MAX_FEE_BPS` | 1000 (10%) | Maximum allowed |
 
-**Characteristics:**
-- Moderate early advantage
-- Wide participation window
-- Deep initial liquidity
-- Stable post-launch trading
+Higher sell fees discourage quick flips and reward holders.
 
-**Best for:** DAOs, community tokens, ecosystem projects
+### Fee Distribution
 
-### Discovery Launch
+Trading fees are split between token creators and the protocol treasury:
 
-**Configuration:**
-- Exponential curve
-- Higher curve steepness
-- Moderate liquidity allocation (60-80%)
-- Shorter duration
+| Recipient | Default Share | Parameter |
+|-----------|---------------|-----------|
+| **Creator** | 20% | `creatorFeeBps = 2000` |
+| **Treasury** | 80% | Remainder |
 
-**Characteristics:**
-- Strong price discovery
-- Significant early advantage
-- Clear demand signal
-- Volatile but informative
+**Example:**
+- User sells tokens, paying 2% fee
+- Creator receives 0.4% (20% of 2%)
+- Treasury receives 1.6% (80% of 2%)
 
-**Best for:** New primitives, uncertain valuations
+Fees emit the `FeesDistributed` event for transparent tracking.
 
-### Stability Launch
+### Launch Fee
 
-**Configuration:**
-- Sigmoid curve with ceiling
-- Defined price range
-- Very high liquidity allocation (90%+)
-- Extended duration
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `launchFee` | 0.01 PROS | Fee to create a new token |
 
-**Characteristics:**
-- Bounded price movement
-- Predictable outcomes
-- Maximum liquidity depth
-- Lower speculation
+This prevents spam launches while remaining accessible.
 
-**Best for:** Stablecoins, RWA tokens, utility tokens
+## Transfer Restrictions
 
-## Anti-Manipulation Measures
+Tokens are **non-transferable until graduation**:
 
-### Sybil Resistance
+### Allowed Actions Before Graduation
 
-Multiple wallets don't provide advantages:
-- No per-wallet caps to circumvent
-- Price is universal
-- Splitting purchases doesn't reduce cost
+| Action | Allowed | Reason |
+|--------|---------|--------|
+| Buy from pool | Yes | Via router/bonding |
+| Sell to pool | Yes | Via router/bonding |
+| Transfer to wallet | No | Prevents off-market trading |
+| Transfer to exchange | No | Prevents pre-listing |
+| Add to LP | No | No external liquidity |
 
-### Whale Protection
+### Whitelisted Addresses
+
+Only these contracts can receive tokens:
+- `LaunchpadBonding` - Main entry point
+- `LaunchpadRouter` - Swap execution
+- `LaunchpadPair` - AMM pool
+
+Users can transfer TO these addresses (selling), but cannot receive FROM them directly (must go through swap functions).
+
+### Post-Graduation
+
+Once graduated:
+- Token becomes fully ERC-20 compliant
+- All transfer restrictions removed
+- Can list on external exchanges
+- Can add to external LPs
+
+## Sybil Resistance
+
+Multiple wallets provide **no advantages**:
+
+| Strategy | Result |
+|----------|--------|
+| Split purchases | Same total price impact |
+| Multiple wallets | No per-wallet caps to exploit |
+| Coordinated buying | Still pays curve price |
+
+The constant product AMM treats total demand the same regardless of source.
+
+## Whale Protection
 
 Large purchases face natural resistance:
-- Curve steepness limits size advantages
-- Big buys move price significantly
-- Public execution reveals large players
 
-### Bot Mitigation
+### Price Impact
 
-Automated trading provides no edge:
-- Speed doesn't affect price
-- No arbitrage during launch
-- Front-running moves your own price
+The AMM formula creates increasing cost per token:
 
-## Liquidity Transition
+$$
+\text{Tokens Out} = \frac{\text{Token Reserve} \times \text{Amount In}}{\text{Quote Reserve} + \text{Amount In}}
+$$
 
-### The Handoff Problem
+Larger purchases get progressively worse rates.
 
-Most launches fail at the transition:
+### Public Execution
+
+All trades are on-chain:
+- Large buys are visible to everyone
+- No hidden order books
+- Community can see accumulation patterns
+
+## Information Symmetry
+
+### Before Launch
+
+Publicly visible:
+- Token supply (1B default)
+- Virtual liquidity parameters (K, assetRate)
+- Graduation threshold (20%)
+- Fee structure
+- Anti-sniper configuration
+
+### During Launch
+
+Real-time data:
+- Current price
+- Tokens remaining
+- Quote reserves
+- Graduation progress
+
+### After Graduation
+
+Available on-chain:
+- Final distribution
+- LiquidityBook pool address
+- Trading metrics
+- Fee accumulation
+
+## Graduation Transition
+
+### The Problem
+
+Most launches fail at transition:
 
 ```
 Launch Complete → ??? → Trading Active
 ```
 
-This gap enables:
-- Price manipulation before liquidity exists
-- Team extraction before markets form
-- Confusion about where to trade
+This gap enables manipulation, extraction, and confusion.
 
 ### ZentraFi's Solution
 
-Atomic transition with no gap:
+Atomic graduation with no gap:
 
 ```
-Launch Complete → Liquidity Seeds → Trading Active
-         [Single Transaction Block]
+Token Reserve < 20% → Graduation Triggers
+    │
+    ├── 1. Liquidity removed from pair
+    ├── 2. Transfer restrictions lifted
+    ├── 3. sZTR allocation distributed
+    ├── 4. LiquidityBook pool created
+    └── 5. Concentrated liquidity seeded
 ```
 
-1. Launch finalizes
-2. Liquidity allocation executes
-3. DLMM bins populate
-4. Pool activates
+All steps execute in sequence. No window for manipulation.
 
-All in one transaction sequence. No window for manipulation.
+## sZTR Holder Benefits
 
-### Liquidity Parameters
+Protocol stakers earn from every successful launch:
 
-| Parameter | Default | Range | Impact |
-|-----------|---------|-------|--------|
-| Allocation % | 80% | 50-100% | Market depth |
-| Bin Step | 25 bps | 1-100 bps | Price granularity |
-| Distribution | Concentrated | Various | Initial shape |
-| Bin Range | ±10 bins | ±5-50 | Liquidity spread |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `sZTRAllocationBps` | 1000 (10%) | Share of raised WPROS |
 
-## Post-Launch Dynamics
+With 800 WPROS raised at graduation:
+- **sZTR holders receive**: 80 WPROS
+- **Distributed via**: sZTR distributor contract
 
-### Price Behavior
-
-After launch, price is determined by:
-- Organic supply/demand on Zentra X
-- DLMM bin mechanics
-- LP additions/removals
-
-Launch curve no longer applies: it only governed distribution.
-
-### Liquidity Evolution
-
-Initial liquidity is seeded, but markets evolve:
-
-**Week 1:** Launch liquidity dominates
-**Month 1:** External LPs join successful tokens
-**Ongoing:** Market forces determine depth
-
-### Project Responsibilities
-
-After launch, projects should:
-- Monitor pool health
-- Consider additional liquidity if needed
-- Engage community LPs
-- Build utility for the token
+This aligns protocol stakers with launch success.
 
 ## Evaluating Launch Fairness
 
 ### Green Flags
 
-- Public curve parameters
-- Reasonable liquidity allocation
-- No hidden allocations
-- Verified contracts
-- Clear post-launch plans
+- Anti-sniper protection enabled
+- Reasonable fee structure (1-2%)
+- 20%+ graduation threshold
+- Transfer restrictions active
+- sZTR allocation enabled
 
 ### Red Flags
 
-- Opaque pricing mechanisms
-- Low liquidity allocation (less than 50%)
-- Large team/insider pre-allocations
-- Unverified or upgradeable contracts
-- No clear token utility
+- Anti-sniper disabled
+- Excessive fees (>5%)
+- Very high graduation threshold (>50%)
+- Modified transfer restrictions
+- No sZTR allocation
 
 ### Questions to Ask
 
-1. Can I verify the curve parameters on-chain?
-2. What percentage goes to liquidity vs. team?
-3. Is there any way to get better terms than public?
-4. What happens to unsold tokens?
-5. When and how does trading activate?
+1. Is anti-sniper protection enabled and for how long?
+2. What are the buy/sell fee rates?
+3. How much goes to creator vs treasury?
+4. What's the graduation threshold?
+5. When do transfer restrictions lift?
+
+## Configuration Reference
+
+### Factory Settings
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `totalSupply` | Fixed supply for all tokens | 1,000,000,000 |
+| `sZTRAllocationBps` | sZTR holder percentage | 1000 (10%) |
+| `sZTREnabled` | Toggle sZTR allocation | true |
+
+### Bonding Settings
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `launchFee` | Fee to launch | 0.01 PROS |
+| `graduationThresholdBps` | Pool reserve trigger | 2000 (20%) |
+| `K` | Bonding curve constant | 100,000,000,000 |
+| `assetRate` | Virtual liquidity rate | 5,000,000,000 |
+| `antiSniperEnabled` | Enable anti-sniper | true |
+| `antiSniperDuration` | Protection duration | 30 seconds |
+
+### Router Settings
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `buyFeeBps` | Fee on buys | 100 (1%) |
+| `sellFeeBps` | Fee on sells | 200 (2%) |
+| `creatorFeeBps` | Creator's share | 2000 (20%) |
+| `MAX_FEE_BPS` | Maximum trading fee | 1000 (10%) |
+| `MAX_ANTI_SNIPER_TAX_BPS` | Maximum sniper tax | 9400 (94%) |
+| `MAX_TOTAL_FEE_BPS` | Maximum total fee | 9500 (95%) |
 
 ## Summary
 
-Fair launches require more than good intentions: they need mechanisms that enforce fairness:
+ZentraFi's fair launch mechanisms work together:
 
-| Principle | Mechanism |
-|-----------|-----------|
-| Equal access | Single public curve |
-| Transparent pricing | On-chain parameters |
-| Proportional allocation | Adaptive pricing |
-| Immediate utility | DLMM liquidity seeding |
+| Mechanism | Purpose |
+|-----------|---------|
+| **Anti-sniper tax** | Defeats bots and MEV |
+| **Fee splitting** | Rewards creators and protocol |
+| **Transfer restrictions** | Prevents pre-graduation manipulation |
+| **Constant product AMM** | Equal pricing for all participants |
+| **Atomic graduation** | No manipulation window |
+| **sZTR rewards** | Aligns stakers with launch success |
 
-ZentraFi's infrastructure makes fair launches the default, not the exception.
+Fair launches aren't just about intentions: they require enforceable mechanics. ZentraFi makes fairness the default.

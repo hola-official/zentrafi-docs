@@ -1,286 +1,196 @@
 ---
-title: 'Adaptive Price Discovery'
-description: 'How bonding curves enable fair, transparent token distribution'
+title: 'Bonding Curve & Virtual Liquidity'
+description: 'How the launchpad uses constant product AMM with virtual liquidity for fair token distribution'
 ---
 
-## The Price Discovery Problem
+## Overview
 
-Traditional token launches fail in predictable ways:
+ZentraFi's launchpad uses a **Uniswap V2-style constant product AMM** with virtual liquidity to enable fair, transparent token launches. Tokens trade against WPROS (Wrapped PROS) and automatically graduate to TraderJoe's LiquidityBook when distribution thresholds are met.
 
-| Launch Type | Problem |
-|-------------|---------|
-| Fixed price | Bots front-run, insiders get allocations |
-| First-come-first-served | Gas wars, failed transactions |
-| Whitelist | Centralized, excludes most participants |
-| Dutch auction | Complex, often ends at floor price |
+## The Constant Product Model
 
-The common failure: **price is set before demand is known**.
-
-When launch price doesn't reflect actual demand, someone captures the difference: usually bots, insiders, or early flippers rather than genuine participants.
-
-## Adaptive Pricing
-
-ZentraFi's launchpad uses **adaptive price discovery**: the price responds to demand in real-time throughout the launch.
-
-### Core Mechanism
+Unlike traditional bonding curves with linear or exponential functions, ZentraFi uses the proven constant product formula:
 
 $$
-P(t) = P_0 \cdot f(S(t))
+x \times y = k
 $$
 
 Where:
-- $P(t)$ = Current price
-- $P_0$ = Starting price
-- $S(t)$ = Tokens sold so far
-- $f$ = Pricing function
+- $x$ = Token reserve
+- $y$ = Quote reserve (virtual + real WPROS)
+- $k$ = Constant product
 
-As more tokens sell, price increases. Early participants get better prices, but late participants aren't excluded: they simply pay market-discovered prices.
+This creates predictable pricing where buying tokens increases price and selling decreases it.
 
-### Why This Works
-
-**No fixed allocations to game:**
-Everyone buys at the current price. No racing to claim spots.
-
-**Real-time price discovery:**
-Final price reflects actual demand, not team estimates.
-
-**Continuous participation:**
-Buy anytime during the launch at the current price.
-
-**Bot resistance:**
-No advantage to speed: only to price tolerance.
-
-## Bonding Curve Types
-
-### Linear Curve
+### Price Calculation
 
 $$
-P(S) = P_0 + k \cdot S
+\text{Price} = \frac{\text{Quote Reserve}}{\text{Token Reserve}}
 $$
 
-Price increases by fixed amount per token sold.
+$$
+\text{Market Cap} = \text{Price} \times \text{Total Supply}
+$$
+
+## Virtual Liquidity
+
+The key innovation is **virtual liquidity**: the pool starts with simulated quote reserves that create immediate price discovery without requiring upfront capital.
+
+### How It Works
+
+Virtual quote reserves are calculated using two parameters:
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `K` | Base curve constant | 100,000,000,000 (100B) |
+| `assetRate` | Rate to maintain target USD market cap | 5,000,000,000 |
+
+**Formula:**
+
+$$
+\text{Virtual Quote} = \frac{K \times \text{ASSET\_RATE\_PRECISION}}{\text{assetRate} \times 10^9}
+$$
+
+With default settings (K=100B, assetRate=5B):
+- **Initial market cap**: 200 WPROS (~$4,000 at $20/WPROS)
+- **Capital to graduate**: 800 WPROS (~$16,000)
+- **Graduation market cap**: 5,000 WPROS (~$100,000)
+
+### Adjusting for Quote Asset Price
+
+The `assetRate` parameter allows maintaining consistent USD-denominated market caps when WPROS price changes:
+
+| WPROS Price | Target Virtual (WPROS) | assetRate |
+|-------------|------------------------|-----------|
+| $20.00 | 200 | 5,000,000,000 (default) |
+| $10.00 | 400 | 2,500,000,000 |
+| $40.00 | 100 | 10,000,000,000 |
+| $1.00 | 4,000 | 250,000,000 |
+
+**Rule of thumb:** When WPROS price doubles, double the `assetRate` to maintain the same USD market cap.
+
+## Graduation Mechanics
+
+Tokens **graduate** to TraderJoe LiquidityBook when the pool token reserve drops below the graduation threshold.
+
+### Graduation Threshold
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `graduationThresholdBps` | 2000 (20%) | Triggers when token reserve falls below this % |
+
+With 20% threshold:
+- Launch starts with 1,000,000,000 tokens in pool
+- Graduation triggers at 200,000,000 tokens remaining
+- 80% of supply has been distributed
+
+### Graduation Economics
+
+The relationship between threshold and outcomes is fixed:
+
+$$
+r = \frac{10000}{\text{Threshold BPS}}
+$$
+
+| Threshold | r | Tokens Sold | Price Multiplier | MCap/Capital Ratio |
+|-----------|---|-------------|------------------|-------------------|
+| 20% | 5 | 80% | 25x | 6.25 |
+| 25% | 4 | 75% | 16x | 5.33 |
+| 30% | 3.33 | 70% | 11x | 4.76 |
+| 50% | 2 | 50% | 4x | 4.0 |
+
+**Key formulas:**
+- Initial Market Cap = V (virtual liquidity)
+- Capital to Graduate = V × (r - 1)
+- Graduation Market Cap = V × r²
+
+### Example: Default Configuration
+
+| Stage | Token Reserve | Quote Reserve | Price (WPROS) | Price (USD) | Market Cap |
+|-------|---------------|---------------|---------------|-------------|------------|
+| Launch | 1,000,000,000 | 200 | 0.0000002 | $0.000004 | $4,000 |
+| Graduation | 200,000,000 | 1,000 | 0.000005 | $0.0001 | $100,000 |
+
+- **Capital required**: 800 WPROS (~$16,000)
+- **Price multiplier**: 25x from launch to graduation
+
+## Graduation Process
+
+When graduation triggers:
 
 ```
-Price
-  │        ╱
-  │      ╱
-  │    ╱
-  │  ╱
-  │╱
-  └─────────── Tokens Sold
+1. Liquidity removed from V2-style pair
+2. Token becomes fully transferable
+3. sZTR holders receive allocation (10% of raised WPROS)
+4. Remaining liquidity migrates to LiquidityBook
+5. Concentrated liquidity distributed across bins
 ```
 
-**Characteristics:**
-- Predictable price increase
-- Moderate early advantage
-- Simple to understand
+### sZTR Holder Rewards
 
-**Best for:** Community tokens, fair launches
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `sZTRAllocationBps` | 1000 (10%) | Percentage of raised quote for sZTR stakers |
+| `sZTREnabled` | true | Toggle sZTR allocation |
 
-### Exponential Curve
+With 800 WPROS raised and 10% allocation:
+- **sZTR holders receive**: 80 WPROS (~$1,600)
+- **Liquidity migration**: 720 WPROS + graduated tokens
 
-$$
-P(S) = P_0 \cdot e^{k \cdot S}
-$$
+## Transfer Restrictions
 
-Price increases faster as more tokens sell.
+Tokens are **non-transferable until graduation**:
 
-```
-Price
-  │           │
-  │          ╱
-  │        ╱
-  │      ╱
-  │____╱
-  └─────────── Tokens Sold
-```
+- Only whitelisted addresses (bonding, router, pair) can initiate transfers
+- Users can sell (transfer TO whitelisted addresses)
+- Full transferability unlocks after graduation
 
-**Characteristics:**
-- Strong early participant advantage
-- Rapid price acceleration
-- Natural supply scarcity
+This prevents:
+- Pre-graduation dumps
+- Off-market trading
+- Rug pulls before liquidity is established
 
-**Best for:** High-demand launches, price discovery focus
+## Parameter Tuning
 
-### Sigmoid Curve
+### Impact Summary
 
-$$
-P(S) = P_0 + \frac{L}{1 + e^{-k(S - S_0)}}
-$$
+| Change | Initial MCap | Capital | Grad MCap | Ratio |
+|--------|--------------|---------|-----------|-------|
+| ↑ K | ↑ | ↑ | ↑ | Same |
+| ↓ K | ↓ | ↓ | ↓ | Same |
+| ↑ assetRate | ↓ | ↓ | ↓ | Same |
+| ↓ assetRate | ↑ | ↑ | ↑ | Same |
+| ↑ Threshold | Same | ↓ | ↓ | ↓ |
+| ↓ Threshold | Same | ↑ | ↑ | ↑ |
 
-S-shaped curve with slow start, rapid middle, and plateau.
+### Choosing Parameters
 
-```
-Price
-  │         ____
-  │       ╱
-  │     ╱
-  │   ╱
-  │__╱
-  └─────────── Tokens Sold
-```
+**For lower graduation market cap:** Increase threshold (but ratio decreases)
 
-**Characteristics:**
-- Gentle start encourages early participation
-- Rapid discovery phase in middle
-- Price ceiling prevents extreme costs
+**For higher capital requirement:** Increase K (increases virtual liquidity proportionally)
 
-**Best for:** Balanced launches, controlled price ranges
+**For same USD values with different quote price:** Adjust assetRate
 
-## Launch Configuration
+## Comparison to Traditional Curves
 
-### Parameters
+| Aspect | Traditional Bonding Curves | ZentraFi Virtual AMM |
+|--------|---------------------------|----------------------|
+| **Model** | Linear/Exponential/Sigmoid | Constant Product (x×y=k) |
+| **Pricing** | Custom formula per curve type | Universal AMM mechanics |
+| **Liquidity** | Abstract curve | Virtual + real reserves |
+| **Graduation** | Soft/hard caps | Token reserve threshold |
+| **Post-launch** | Separate DEX listing | Atomic LiquidityBook migration |
+| **Familiarity** | Novel mechanics | Uniswap V2-style (proven) |
 
-| Parameter | Description | Impact |
-|-----------|-------------|--------|
-| `startPrice` | Initial token price | Floor for all purchases |
-| `curveType` | Linear/Exponential/Sigmoid | Price behavior |
-| `curveParameter` | Steepness factor | How fast price rises |
-| `softCap` | Minimum raise target | Launch validity threshold |
-| `hardCap` | Maximum raise amount | Launch completion trigger |
-| `duration` | Launch window | Time available to participate |
-| `liquidityAllocation` | % to seed pools | Post-launch market depth |
+## Summary
 
-### Example Configuration
+ZentraFi's bonding curve model provides:
 
-```
-Token: PROJECT
-Curve: Exponential
-Start Price: $0.001
-Curve Parameter: 0.00001
-Soft Cap: $50,000
-Hard Cap: $500,000
-Duration: 48 hours
-Liquidity: 80%
-```
-
-**Expected behavior:**
-- First 10% of tokens: ~$0.001-0.002
-- Middle 50%: ~$0.002-0.01
-- Final 10%: ~$0.01-0.05+
-
-## Participation Flow
-
-### For Participants
-
-1. **Connect wallet** to Zentra App
-2. **Review launch details**: curve, caps, allocation
-3. **Enter participation amount** in quote token (e.g., USDC)
-4. **See estimated tokens** based on current price
-5. **Confirm transaction**
-6. **Receive tokens** when launch finalizes
-
-### Price Execution
-
-Your purchase executes along the curve:
-
-**Small purchase:** Mostly at displayed price
-**Large purchase:** Averages across price increase
-
-$$
-\text{Tokens Received} = \int_{S_0}^{S_1} \frac{1}{P(S)} dS
-$$
-
-Where $S_0$ is tokens sold before your purchase, $S_1$ is after.
-
-### Example Purchase
-
-Launch state: 1M tokens sold at $0.005 current price
-
-You buy with $1,000:
-
-| Tokens Bought | Avg Price | Cost |
-|---------------|-----------|------|
-| 0-50,000 | $0.0050 | $250 |
-| 50,000-100,000 | $0.0052 | $260 |
-| 100,000-150,000 | $0.0054 | $270 |
-| 150,000-180,000 | $0.0056 | $220 |
-
-**Result:** 180,000 tokens for $1,000 = $0.00556 average
-
-## Launch Outcomes
-
-### Successful Launch (Hard Cap)
-
-When hard cap is reached:
-1. Launch closes immediately
-2. Token distribution finalizes
-3. Liquidity seeds to Zentra X
-4. Trading activates
-
-### Successful Launch (Duration)
-
-When duration expires above soft cap:
-1. Launch closes at expiry
-2. Unsold tokens handled per configuration
-3. Distribution and liquidity proceed
-
-### Failed Launch (Below Soft Cap)
-
-If soft cap isn't reached:
-1. Launch marked as failed
-2. Participants can claim refunds
-3. No tokens distributed
-
-## Anti-Gaming Mechanisms
-
-### No Speed Advantage
-
-Adaptive pricing removes first-mover advantages:
-- Price is the same for everyone at any moment
-- No benefit to faster transactions
-- Gas optimization doesn't help
-
-### Continuous Clearing
-
-Unlike batch auctions, prices clear continuously:
-- No hidden order books
-- Transparent current price
-- Immediate execution certainty
-
-### Economic Alignment
-
-The curve creates natural incentives:
-- Early = lower price, but less information
-- Late = higher price, but proven demand
-- Manipulation = buy your own curve higher
-
-## Integration with DLMM
-
-### Liquidity Seeding
-
-When launch completes:
-
-1. **Calculate terminal price** from curve endpoint
-2. **Allocate liquidity portion** (e.g., 80% of raise)
-3. **Determine active bin** matching terminal price
-4. **Distribute across bins** per configured shape
-5. **Activate pool** on Zentra X
-
-### Price Continuity
-
-The terminal launch price becomes the initial trading price:
-
-$$
-\text{Initial Active Bin} = \text{floor}\left(\frac{\log(P_{terminal})}{\log(1 + s)}\right)
-$$
-
-No gap between launch price and first trade price.
-
-### Liquidity Shape
-
-Initial liquidity typically uses concentrated distribution:
-- Heavy allocation at terminal price bin
-- Tapering allocation in adjacent bins
-- Supports immediate trading depth
-
-## Comparison to Alternatives
-
-| Mechanism | Price Discovery | Fairness | Complexity |
-|-----------|-----------------|----------|------------|
-| Fixed Price | None | Low | Low |
-| Dutch Auction | Batch | Medium | Medium |
-| Adaptive Curve | Continuous | High | Medium |
-| Open Market | Post-launch | Variable | Low |
-
-Adaptive curves combine real-time discovery with participation fairness: the price you see is the price you get, adjusted for your impact on the curve.
+| Feature | Benefit |
+|---------|---------|
+| **Virtual liquidity** | No upfront capital needed |
+| **Constant product** | Predictable, proven price mechanics |
+| **Threshold graduation** | Clear milestone for market formation |
+| **sZTR rewards** | Protocol stakers benefit from launches |
+| **Transfer restrictions** | Prevents pre-graduation manipulation |
+| **Atomic migration** | Seamless transition to LiquidityBook |

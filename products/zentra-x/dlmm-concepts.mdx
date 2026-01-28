@@ -1,108 +1,288 @@
 ---
-title: "DLMM concepts"
-description: "Understanding the core concepts behind Dynamic Liquidity Market Maker"
+title: "DLMM Technical Reference"
+description: "Deep dive into bin mechanics, pricing formulas, and market aggregation"
 ---
 
-## Concentrated liquidity
-
-DLMM enables LPs to provide liquidity within a specified price range, maximizing capital efficiency.
-
-This is particularly effective for token pairs that trade within tight ranges, such as USDC/USDT ($0.99 - $1.01). Liquidity outside this range remains unused and generates no fees.
-
-By concentrating liquidity within the active trading range, LPs optimize their fee earnings. Only the active bin earns trading fees, while all other bins contain a single token type—either depleted or awaiting use.
-
-## DLMM bin structure
-
-### Bin price
-
-Liquidity is distributed across discrete bins with fixed width and price. Within each bin, liquidity exchanges at a fixed price using the formula `X + Y = k`. You add X tokens and remove Y tokens (or vice versa) until only one token type remains.
-
-Each bin represents a single price point. The difference between consecutive bins is the **bin step**, calculated from basis points set by the pool creator.
-
-**Example**: For PHRS/USDC at $20 with a 25 basis point (0.25%) bin step:
-
-- Bin 1: $20.00
-- Bin 2: $20.00 × 1.0025 = $20.05
-- Bin 3: $20.05 × 1.0025 = $20.10
-
-Liquidity pools are identified by their tuple: `(Token X, Token Y, Bin Step S)`
-
-### Bin liquidity
-
-Liquidity in each bin follows the constant sum price variant:
-
-```
-P · x + y = L
-```
-
-Where:
-- `x` = quantity of token X
-- `y` = quantity of token Y
-- `L` = amount of liquidity in the bin
-- `P` = Δy/Δx = price constant unique to each pool
-
-`P` represents the rate of change of Y reserves per change in X reserves—the price constant unique to each pool.
-
-### Bin composition
-
 <Info>
-**Key points:**
-- All bins except the active one contain just one token type (X or Y)
-- Only the active bin earns trading fees
-- `P` represents the slope and remains uniform within every bin
+**Looking for the overview?** Start with [Why DLMM Matters](/core-concepts/dynamic-liquidity-market-maker-dlmm) for the value proposition, or [LP Strategies](/products/zentra-x/liquidity-shapes) for practical guidance.
 </Info>
 
-Unlike constant product AMMs where `y = P/x`, price here is independent of reserve amounts. Since reserve composition is independent of both price and liquidity, we use the **composition factor** `c`—the percentage of bin liquidity composed of token Y:
+## Concentrated Liquidity: The Technical Advantage
+
+DLMM enables LPs to provide liquidity within specific price ranges instead of across all possible prices.
+
+**Why this matters in practice:**
+
+| Pair Type | Realistic Range | Capital Utilization |
+|-----------|-----------------|---------------------|
+| USDC/USDT | $0.999 - $1.001 | ~100% in 3 bins |
+| ETH/USDC | ±10% from current | ~80% in active region |
+| New token | ±50% from launch | ~60% in active region |
+
+Liquidity outside the trading range generates zero fees. Concentration = efficiency.
+
+## Bin Structure Deep Dive
+
+### Bin Pricing Formula
+
+Each bin has a fixed price. Consecutive bins are spaced by the bin step (in basis points):
+
+$$
+P_{i+1} = P_i \times (1 + s)
+$$
+
+Where:
+- $P_i$ = Price of bin $i$
+- $s$ = Bin step (e.g., 0.0025 for 25 bp)
+
+**Worked Example:**
+
+ETH/USDC at $20.00 with 25 bp (0.25%) bin step:
+
+| Bin ID | Calculation | Price |
+|--------|-------------|-------|
+| Active (0) | Base | $20.00 |
+| +1 | $20.00 × 1.0025 | $20.05 |
+| +2 | $20.05 × 1.0025 | $20.10 |
+| -1 | $20.00 ÷ 1.0025 | $19.95 |
+| -2 | $19.95 ÷ 1.0025 | $19.90 |
+
+### Constant Sum Within Bins
+
+Unlike constant product AMMs ($x \times y = k$), each bin uses **constant sum**:
+
+$$
+P \cdot x + y = L
+$$
+
+Where:
+- $x$ = Token X reserves in bin
+- $y$ = Token Y reserves in bin
+- $L$ = Total liquidity in bin
+- $P$ = Bin price (Δy/Δx)
+
+**What this means:** Trades within a bin execute at exactly the bin price. No slippage until the bin depletes.
+
+### Composition Factor
+
+The composition factor $c$ describes what percentage of a bin is token Y:
+
+$$
+c = \frac{y}{L}
+$$
+
+From this, we can derive reserves:
+
+$$
+y = c \cdot L
+$$
+
+$$
+x = \frac{L}{P} \cdot (1 - c)
+$$
+
+**Practical interpretation:**
+
+| c value | Bin State | Meaning |
+|---------|-----------|---------|
+| c = 1 | 100% Y | All token X sold, bin exhausted |
+| c = 0.5 | 50/50 | This is the active bin |
+| c = 0 | 100% X | All token Y sold, bin exhausted |
+
+## Market Aggregation
+
+### The Active Bin
+
+Only one bin is "active" at any time. The active bin:
+- Contains both token types
+- Is where trading happens
+- Earns all trading fees
 
 ```
-c = y/L
+Price Direction →
+
+Bins:  [Y only] [Y only] [X+Y] [X only] [X only]
+                          ↑
+                    Active Bin
+                    (earns fees)
 ```
 
-From this, we derive x and y:
+### How Price Moves
+
+When trading exhausts the active bin, price moves to the next bin:
 
 ```
-y = c · L
-x = L/P · (1 - c)
+Scenario: Strong buy pressure on token X
+
+Before:
+[Y][Y][X+Y][X][X]
+       ↑ Active at $20.00
+
+After buying depletes $20.00 bin:
+[Y][Y][Y][X+Y][X]
+          ↑ Active at $20.05
 ```
 
-## Market aggregation
+Each bin flip is a discrete price change equal to one bin step.
 
-The constant sum curve intercepts both axes, meaning X or Y token reserves can be fully depleted. When this occurs, the current price moves to the next bin (left or right).
+### Multi-Bin Trades
 
-### Active price bin
+Large trades cross multiple bins. The effective price is the volume-weighted average:
 
-The active price bin contains reserves of both X and Y tokens.
+```
+Trade: Buy 1000 ETH
 
-<Warning>
-There can only be **one active bin** at any point in time.
-</Warning>
+Bin $20.00: 400 ETH available → 400 at $20.00 = $8,000
+Bin $20.05: 400 ETH available → 400 at $20.05 = $8,020
+Bin $20.10: 200 ETH available → 200 at $20.10 = $4,020
 
-- All bins to the **left** of the active bin contain only token Y
-- All bins to the **right** of the active bin contain only token X
+Total: 1000 ETH for $20,040
+Effective price: $20.04
+```
 
-<Frame>
-  <img src="/images/market-aggregation.avif" alt="Market aggregation" style={{ borderRadius: '10px' }} />
-</Frame>
+The slippage is discrete and predictable, not continuous.
 
-### Practical example
+## Fee Mechanics
 
-Consider a PHRS/USDC pool where:
-- Asset Y = USDC
-- Asset X = PHRS
-- Price P = amount of USDC per PHRS
+### Dynamic Fee Formula
 
-If the $100 PHRS bin is the active bin:
-- All bins to the left contain only USDC
-- All bins to the right contain only PHRS
+$$
+\text{Total Fee} = \text{Base Fee} + \text{Variable Fee}
+$$
 
-When demand for PHRS increases significantly, the active bin shifts right as PHRS reserves in the $100 bin get exhausted.
+**Base Fee:**
+
+$$
+f_b = B \times s
+$$
+
+Where $B$ is the base factor and $s$ is bin step.
+
+**Variable Fee:**
+
+$$
+f_v = A \times (v_a)^2
+$$
+
+Where:
+- $A$ = Variable fee control parameter
+- $v_a$ = Volatility accumulator
+
+### Volatility Accumulator
+
+The volatility accumulator tracks recent market activity:
+
+| Event | Effect on $v_a$ |
+|-------|-----------------|
+| Bin crossing | Increases |
+| High swap frequency | Increases |
+| Large trade size | Increases |
+| Time passing | Decays |
+
+**Result:** Fees automatically surge during volatile periods, protecting LPs.
+
+## Pool Identification
+
+Pools are uniquely identified by their tuple:
+
+```
+(Token X, Token Y, Bin Step S)
+```
+
+For example:
+- `(ETH, USDC, 25)` = ETH/USDC with 25 bp step
+- `(USDC, USDT, 1)` = Stablecoin pair with 1 bp step
+
+Multiple pools can exist for the same pair with different bin steps.
+
+## Bin ID System
+
+Bins are identified by integer IDs relative to a reference point:
+
+$$
+\text{Bin ID} = \text{floor}\left(\frac{\log(P)}{\log(1 + s)}\right)
+$$
+
+Where:
+- $P$ = Price at bin
+- $s$ = Bin step
+
+**Example:** For 25 bp step at $1.00:
+- Bin ID 8388608 = $1.00 (reference)
+- Bin ID 8388609 = $1.0025
+- Bin ID 8388607 = $0.9975
 
 ## For Builders
 
-DLMM enables:
+### Key Integration Points
 
-- Programmatic liquidity control
-- Custom pool configurations
-- Efficient liquidity deployment
+| Contract | Function | Purpose |
+|----------|----------|---------|
+| LBPair | `getReserves()` | Query bin reserves |
+| LBPair | `getActiveId()` | Get current active bin |
+| LBRouter | `swapExactTokensForTokens()` | Execute swaps |
+| LBFactory | `createLBPair()` | Create new pools |
 
-This makes Zentra X suitable for both retail and advanced DeFi applications.
+### Calculating Expected Output
+
+```solidity
+// Pseudocode for swap calculation
+function getAmountOut(uint256 amountIn, uint24 activeId) {
+    uint256 remaining = amountIn;
+    uint256 amountOut = 0;
+    uint24 currentBin = activeId;
+
+    while (remaining > 0) {
+        (uint256 binReserveX, uint256 binReserveY) = getBinReserves(currentBin);
+        uint256 price = getPriceFromId(currentBin);
+
+        uint256 maxOutput = swapForY ? binReserveY : binReserveX;
+        uint256 usedAmount = min(remaining, maxAmountForBin);
+
+        amountOut += calculateOutput(usedAmount, price);
+        remaining -= usedAmount;
+
+        if (binDepleted) currentBin = nextBin;
+    }
+
+    return amountOut;
+}
+```
+
+### Events to Monitor
+
+| Event | Emitted When |
+|-------|--------------|
+| `Swap` | Trade executes |
+| `DepositedToBins` | Liquidity added |
+| `WithdrawnFromBins` | Liquidity removed |
+| `TransferBatch` | LP shares transferred |
+
+## Quick Reference
+
+### Formulas
+
+| Concept | Formula |
+|---------|---------|
+| Bin price | $P_{i+1} = P_i \times (1 + s)$ |
+| Constant sum | $P \cdot x + y = L$ |
+| Composition | $c = y / L$ |
+| Total fee | $f_b + f_v$ |
+
+### Bin Step Guidelines
+
+| Step | Increment | Best For |
+|------|-----------|----------|
+| 1 bp | 0.01% | Stablecoins |
+| 10 bp | 0.1% | Major pairs |
+| 25 bp | 0.25% | Standard tokens |
+| 100 bp | 1% | Volatile/new tokens |
+
+<CardGroup cols={2}>
+  <Card title="Why DLMM?" icon="lightbulb" href="/core-concepts/dynamic-liquidity-market-maker-dlmm">
+    Understand the value proposition
+  </Card>
+  <Card title="LP Strategies" icon="chart-pie" href="/products/zentra-x/liquidity-shapes">
+    Choose your liquidity shape
+  </Card>
+</CardGroup>

@@ -16,19 +16,13 @@ ZentraFi is structured as a modular protocol stack. Each layer has distinct resp
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                       PROTOCOL LAYER                            │
-│   Launchpad Contracts  •  Liquidity Book  •  Router  •  Oracle  │
+│      Launchpad Contracts  •  Liquidity Book  •  Router          │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      GOVERNANCE LAYER                           │
 │    veZTR Voting  •  Gauge Controller  •  Treasury  •  Timelock  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      SETTLEMENT LAYER                           │
-│                        Pharos Network                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -38,18 +32,13 @@ The application layer provides user-facing interfaces for interacting with proto
 
 ### Zentra App (Launchpad Interface)
 
-**Purpose:** Token creation, launch configuration, and participation management.
+**Purpose:** Token creation, launch participation, and graduation tracking.
 
 **Components:**
-- Launch wizard for project configuration
-- Participation interface for buyers
-- Real-time price discovery visualization
-- Post-launch analytics and tracking
-
-**Interactions:**
-- Reads from launchpad contracts for active launches
-- Writes to launchpad contracts for participation
-- Queries oracle for price feeds
+- Token launch wizard with metadata configuration
+- Buy/sell interface for bonding curve trading
+- Real-time price and graduation progress
+- Post-graduation trading transition
 
 ### Zentra X Interface (DEX)
 
@@ -60,11 +49,6 @@ The application layer provides user-facing interfaces for interacting with proto
 - Liquidity management dashboard
 - Position analytics and P&L tracking
 - Pool explorer and market data
-
-**Interactions:**
-- Reads pool state from Liquidity Book contracts
-- Writes swaps through router contracts
-- Manages LP positions through factory contracts
 
 ### Analytics Dashboard
 
@@ -82,30 +66,60 @@ The protocol layer contains the core smart contracts that implement ZentraFi's f
 
 ### Launchpad Contracts
 
-**LBLaunchpad**: Factory contract for creating and managing token launches.
+The launchpad uses a modular architecture for token launches with bonding curve mechanics.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        LaunchpadBonding                         │
+│  (Main entry point - launches tokens, manages graduation)       │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│ LaunchpadFactory│ │  LaunchpadRouter │ │  LaunchpadPair  │
+│ (Creates tokens)│ │ (Handles swaps) │ │   (AMM pool)    │
+└────────┬────────┘ └─────────────────┘ └─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│ LaunchpadToken  │
+│  (ERC-20 token) │
+└─────────────────┘
+```
+
+**LaunchpadBonding**: Main entry point for launching tokens and managing graduation.
 
 ```solidity
-// Simplified interface
-interface ILBLaunchpad {
-    function createLaunch(
+interface ILaunchpadBonding {
+    function launch(
         LaunchParams calldata params
-    ) external returns (address launchAddress);
+    ) external payable returns (address token, address pair);
 
-    function participate(
-        address launch,
-        uint256 amount
-    ) external payable;
+    function buyWithNative(
+        address token,
+        uint256 minTokens,
+        uint256 deadline
+    ) external payable returns (uint256 tokensReceived);
 
-    function finalizeLaunch(
-        address launch
-    ) external;
+    function sellForNative(
+        address token,
+        uint256 amount,
+        uint256 minNative,
+        uint256 deadline
+    ) external returns (uint256 nativeReceived);
+
+    function isEligibleForGraduation(
+        address token
+    ) external view returns (bool eligible, uint256 remaining, uint256 threshold);
 }
 ```
 
 **Key Functions:**
-- `createLaunch`: Deploy new launch with specified parameters
-- `participate`: Buy tokens during active launch
-- `finalizeLaunch`: Complete launch and seed liquidity
+- `launch`: Deploy new token with bonding curve pool
+- `buyWithNative`: Purchase tokens with native currency
+- `sellForNative`: Sell tokens for native currency
+- Graduation triggers automatically when token reserve < 20%
 
 ### Liquidity Book Contracts
 
@@ -119,17 +133,6 @@ interface ILBFactory {
         uint24 activeId,
         uint16 binStep
     ) external returns (ILBPair pair);
-
-    function setPreset(
-        uint16 binStep,
-        uint16 baseFactor,
-        uint16 filterPeriod,
-        uint16 decayPeriod,
-        uint16 reductionFactor,
-        uint24 variableFeeControl,
-        uint16 protocolShare,
-        uint24 maxVolatilityAccumulator
-    ) external;
 }
 ```
 
@@ -157,9 +160,7 @@ interface ILBPair {
         address to,
         uint256[] calldata ids,
         uint256[] calldata amountsToBurn
-    ) external returns (
-        bytes32[] memory amounts
-    );
+    ) external returns (bytes32[] memory amounts);
 }
 ```
 
@@ -187,13 +188,6 @@ interface ILBRouter {
     );
 }
 ```
-
-### Oracle Integration
-
-Price oracles provide external price references for:
-- Launch pricing validation
-- Fee calculation inputs
-- Analytics and reporting
 
 ## Governance Layer
 
@@ -236,23 +230,6 @@ The governance layer manages protocol parameters and resource allocation.
 - Cancellation capabilities
 - Emergency actions for critical situations
 
-## Settlement Layer
-
-ZentraFi settles all transactions on **Pharos**, a high-performance EVM-compatible network.
-
-### Network Characteristics
-
-| Property | Value |
-|----------|-------|
-| Consensus | PoS-based |
-| Block Time | Fast finality |
-| Gas Costs | Low |
-| EVM Compatibility | Full |
-
-### Contract Deployment
-
-All ZentraFi contracts are deployed on Pharos. Contract addresses will be published at mainnet launch.
-
 ## Security Model
 
 ### Contract Security
@@ -269,6 +246,6 @@ All ZentraFi contracts are deployed on Pharos. Contract addresses will be publis
 
 ### Upgrade Path
 
-- Core contracts: Immutable
-- Peripheral contracts: Upgradeable through governance
-- Parameters: Adjustable within bounds
+- LaunchpadBonding, Factory, Router: UUPS Upgradeable
+- LBPair contracts: Immutable after creation
+- Parameters: Adjustable within bounds via governance

@@ -1,104 +1,191 @@
 ---
 title: 'How Launchpad + DLMM Fit Together'
-description: 'The integration between token distribution and discretized liquidity markets'
+description: 'The integration between token distribution and LiquidityBook concentrated liquidity'
 ---
 
 ## The Integration Thesis
 
 Most protocols treat launches and trading as separate problems. Launch on one platform, list on another, hope they connect.
 
-ZentraFi rejects this separation. Zentra App (launchpad) and Zentra X (DEX) are designed as a single system where each phase flows into the next.
+That gap is where projects die.
+
+```
+Traditional Launch:
+Launch ends → ??? → Trading begins
+
+What happens in that "???"?
+├── Team scrambles to find liquidity
+├── Bots front-run the first trades
+├── Price manipulation occurs
+├── Users confused about where to trade
+└── Many projects never recover
+```
+
+ZentraFi eliminates the gap entirely. Zentra App (launchpad) and Zentra X (DEX) are one system. Think of it like a relay race: the launchpad runs the first leg, the DEX runs the second leg, and graduation is the baton pass.
+
+**If you drop the baton, the race is over.**
 
 ## The Complete Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        LAUNCH PHASE                                  │
-│  Project configures → Users participate → Price discovers           │
+│  Token created → Virtual AMM pool → Users buy/sell via bonding      │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
-                                  ▼
+                                  ▼ Token reserve < 20%
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      TRANSITION PHASE                                │
-│  Launch closes → Liquidity seeds → Bins populate                    │
+│                      GRADUATION PHASE                                │
+│  Restrictions lift → sZTR paid → LiquidityBook pool created         │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       TRADING PHASE                                  │
-│  Markets open → DLMM manages liquidity → Ongoing price discovery    │
+│  Concentrated liquidity → Full ERC-20 → Open market trading         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Phase 1: Adaptive Distribution
+## Phase 1: Bonding Curve Trading
 
-When a project launches on Zentra App, they configure:
+When a project launches on Zentra App:
 
-- **Token parameters**: Supply, name, metadata
-- **Pricing curve**: How price responds to demand
-- **Duration**: How long the launch runs
-- **Liquidity allocation**: What percentage seeds the market
+### Token Creation
 
-Participants buy tokens through adaptive pricing. Early buyers get lower prices. As demand increases, so does the price. This mechanism:
+The `LaunchpadFactory` deploys an ERC-20 token with:
+- Fixed supply: 1,000,000,000 tokens (1B with 18 decimals)
+- Transfer restrictions (non-transferable until graduation)
+- Full metadata support (name, symbol, description, socials)
 
-- Rewards early participation without punishing late arrivals
-- Discovers a market-clearing price organically
-- Prevents bot frontrunning through continuous pricing
+### Virtual AMM Pool
 
-## Phase 2: Liquidity Formation
+The `LaunchpadPair` creates a Uniswap V2-style pool with virtual liquidity:
 
-When the launch completes:
+| Reserve | Initial Value | Source |
+|---------|---------------|--------|
+| Token | 1,000,000,000 | Full supply |
+| Quote (WPROS) | 200 | Virtual (calculated from K and assetRate) |
 
-1. **Raised capital is allocated**: A portion (defined by the creator) goes to liquidity
-2. **Bins are populated**: Liquidity seeds into DLMM bins around the terminal price
-3. **Pool goes live**: Trading activates on Zentra X
+### Trading Mechanics
 
-This happens atomically. There's no gap where the token exists without a market.
+Users interact via `LaunchpadBonding`:
 
-### Why This Matters
-
-Traditional launches create a liquidity bootstrapping problem:
-
+**Buying:**
 ```
-Launch ends → ??? → Trading begins
+User sends WPROS → Router calculates tokens → Tokens credited
+Price increases as token reserve decreases
 ```
 
-That "???" is where most projects struggle. They need to:
-- Source capital for liquidity (often from team allocations)
-- Choose an AMM and configure pools
-- Hope initial trading doesn't drain their LP
+**Selling:**
+```
+User sends tokens → Router calculates WPROS → WPROS credited
+Price decreases as token reserve increases
+```
 
-ZentraFi eliminates this gap. Launch capital becomes trading liquidity. The transition is automatic.
+### Anti-Sniper Protection
 
-## Phase 3: DLMM Trading
+During the first 30 seconds:
+- 94% tax decaying linearly to 0%
+- Prevents bots from front-running launches
+- Patient participants get fair pricing
 
-Once live on Zentra X, the token trades through the Liquidity Book model:
+## Phase 2: Graduation
+
+Graduation triggers automatically when the pool's token reserve drops below 20% of total supply.
+
+### Trigger Condition
+
+$$
+\text{Token Reserve} < \text{Total Supply} \times \frac{\text{graduationThresholdBps}}{10000}
+$$
+
+With default 20% threshold:
+- Graduation at 200,000,000 tokens remaining
+- 80% of supply distributed to buyers
+- ~800 WPROS raised (at default configuration)
+
+### Graduation Sequence
+
+```
+1. Check eligibility
+   └── Token reserve < 20%?
+
+2. Remove liquidity
+   └── Extract tokens + WPROS from LaunchpadPair
+
+3. Unlock token
+   └── Set graduated = true (enables transfers)
+
+4. Distribute sZTR allocation
+   └── 10% of raised WPROS to sZTR holders
+
+5. Create LiquidityBook pool
+   └── Deploy LBPair via LBFactory
+
+6. Seed concentrated liquidity
+   └── Distribute across bins around graduation price
+```
+
+### Atomic Execution
+
+All steps execute in a single transaction sequence. There is no gap where:
+- Tokens exist without a market
+- Manipulation can occur
+- Users are confused about where to trade
+
+### sZTR Rewards
+
+Protocol stakers receive a share of graduation proceeds:
+
+| Parameter | Default | Example (800 WPROS raised) |
+|-----------|---------|---------------------------|
+| `sZTRAllocationBps` | 10% | 80 WPROS to stakers |
+| Liquidity migration | 90% | 720 WPROS + tokens to LB |
+
+## Phase 3: LiquidityBook Trading
+
+Once graduated, the token trades on TraderJoe's LiquidityBook through Zentra X.
 
 ### Bin-Based Execution
 
-Liquidity exists in discrete price bins. Each bin:
+Liquidity exists in discrete price bins:
+
+```
+Bins:    -5   -4   -3   -2   -1    0   +1   +2   +3   +4   +5
+         ▓    ▓▓   ▓▓▓  ▓▓▓▓ ▓▓▓▓▓████▓▓▓▓▓ ▓▓▓▓ ▓▓▓  ▓▓   ▓
+                              ↑
+                         Active Bin (graduation price)
+```
+
+Each bin:
 - Holds reserves at a fixed price
 - Executes trades at zero slippage until depleted
-- Moves the market to the next bin when exhausted
+- Moves the market to adjacent bin when exhausted
 
 ### Dynamic Fees
 
-Fees respond to market conditions:
-- **Base fee**: Minimum cost set by pool configuration
-- **Variable fee**: Scales with volatility (bin crossings, swap frequency)
+LiquidityBook fees respond to market conditions:
 
-During launch days and high-volatility periods, fees increase automatically. This:
-- Compensates LPs for increased risk
-- Discourages extractive trading strategies
-- Captures more value during peak demand
+$$
+\text{Fee} = \text{Base Fee} + \text{Variable Fee}
+$$
 
-### Natural Liquidity Management
+**Variable fee** increases with:
+- Bin crossings during swaps
+- Swap frequency
+- Large trade sizes
 
-Because initial liquidity is seeded around the launch price, the market starts with concentrated depth. As trading continues:
+This compensates LPs during volatile periods.
 
-- Price movement depletes bins on one side
-- LPs can rebalance or add to positions
-- Additional liquidity providers join as the market matures
+### Price Continuity
+
+The graduation price determines the initial active bin:
+
+$$
+\text{Active Bin ID} = \text{floor}\left(\frac{\log(P_{graduation})}{\log(1 + \text{binStep})}\right)
+$$
+
+Trading begins exactly at the price where the bonding curve ended.
 
 ## For Projects
 
@@ -106,50 +193,251 @@ This integration provides:
 
 | Benefit | Description |
 |---------|-------------|
-| **No bootstrapping required** | Liquidity comes from launch proceeds |
-| **Immediate trading** | Markets activate when distribution ends |
-| **Price continuity** | Terminal launch price becomes initial trading price |
-| **Reduced coordination** | One platform handles both phases |
+| **No bootstrapping required** | Liquidity comes from graduation proceeds |
+| **Immediate trading** | Markets activate when graduation completes |
+| **Price continuity** | Graduation price becomes initial trading price |
+| **Reduced coordination** | One platform handles distribution + liquidity |
+| **Built-in anti-manipulation** | Transfer restrictions + anti-sniper |
 
 ## For Traders
 
-From day one, launched tokens have:
+From graduation onwards, tokens have:
 
-- **Real liquidity**: Not just a pool with minimal depth
-- **Fair pricing**: DLMM bins prevent excessive slippage
-- **Market integrity**: Dynamic fees discourage manipulation
+| Feature | Benefit |
+|---------|---------|
+| **Real liquidity** | Concentrated depth at market price |
+| **Zero slippage (in-bin)** | Trade at exact bin price |
+| **Fair pricing** | DLMM bins prevent excessive impact |
+| **Market integrity** | Dynamic fees discourage manipulation |
 
 ## For LPs
 
-DLMM pools from launches offer:
+LiquidityBook pools from graduations offer:
 
-- **Concentrated positions**: Capital focused where trading occurs
-- **Fee capture**: Dynamic fees during volatile periods
-- **Clear entry points**: Join markets with established price ranges
+| Opportunity | Details |
+|-------------|---------|
+| **Concentrated positions** | Capital focused where trading occurs |
+| **Fee capture** | Dynamic fees during volatile periods |
+| **Clear entry points** | Join markets with established price ranges |
+| **Farming potential** | Gauge voting can direct ZTR emissions |
 
-## Technical Details
+## Technical Integration
 
-### Liquidity Seeding Parameters
+### Contract Flow
 
-Pool creators configure:
-- **Bin step**: Price increment between bins (e.g., 0.25%)
-- **Active bin range**: How many bins around the active price receive liquidity
-- **Distribution shape**: Uniform, concentrated, or custom
+```
+LaunchpadBonding
+    │
+    ├── Creates token via LaunchpadFactory
+    ├── Creates pair via LaunchpadPair
+    ├── Routes swaps via LaunchpadRouter
+    │
+    └── On graduation:
+        ├── Calls LBFactory.createLBPair()
+        ├── Adds liquidity to LBPair
+        └── Distributes sZTR allocation
+```
 
-### Price Continuity
+### Key Interfaces
 
-The final launch price determines the initial active bin:
+| Contract | Purpose | Integration Point |
+|----------|---------|-------------------|
+| `LaunchpadBonding` | Launch entry point | Triggers graduation |
+| `LBFactory` | Creates LB pools | Receives graduation call |
+| `LBRouter` | Swap execution | Post-graduation trading |
+| `LBPair` | Pool contract | Holds graduated liquidity |
 
-$$
-\text{Active Bin} = \text{floor}\left(\frac{\log(\text{Launch Price})}{\log(1 + \text{Bin Step})}\right)
-$$
+### Checking Graduation Status
 
-This ensures trading begins at exactly the price where distribution ended.
+```solidity
+// Check if token can graduate
+(bool eligible, uint256 remaining, uint256 threshold) =
+    bonding.isEligibleForGraduation(token);
 
-### Liquidity Distribution
+// Graduation happens automatically during buy transactions when eligible
+```
 
-Initial liquidity can follow different distributions:
+## Liquidity Distribution
 
-- **Uniform**: Equal amounts across all seeded bins
-- **Concentrated**: Heavier allocation near the active bin
-- **Custom**: Project-defined distribution for specific use cases
+### Initial Seeding
+
+When graduating to LiquidityBook:
+
+| Input | Value |
+|-------|-------|
+| Token amount | Remaining from pair (~200M) |
+| Quote amount | 90% of raised WPROS (~720) |
+| Active bin | Calculated from graduation price |
+| Distribution | Concentrated around active bin |
+
+### Bin Allocation
+
+Liquidity is distributed across multiple bins for depth:
+
+```
+Example distribution (simplified):
+Bin -2: 5% of liquidity
+Bin -1: 15% of liquidity
+Bin  0: 60% of liquidity (active)
+Bin +1: 15% of liquidity
+Bin +2: 5% of liquidity
+```
+
+This provides:
+- Deep liquidity at current price
+- Support/resistance at nearby prices
+- Room for price discovery
+
+## For Founders: What Happens to Your Liquidity
+
+If you're launching a token, this is the most important section. Here's exactly what happens to your liquidity at graduation.
+
+### The Moment of Truth: T+0
+
+When your token reserve hits 20%, graduation triggers. Here's the timeline:
+
+```
+T-1 second: Your token is on the bonding curve
+            └── Users can buy/sell via LaunchpadBonding
+            └── Transfer restricted
+            └── Pool has: 200M tokens + 800 WPROS
+
+T+0: Graduation triggers (atomic)
+     │
+     ├── Step 1: Bonding curve liquidity removed
+     │           └── 200M tokens extracted
+     │           └── 800 WPROS extracted
+     │
+     ├── Step 2: Token unlocked
+     │           └── graduated = true
+     │           └── Full ERC-20 transfers enabled
+     │
+     ├── Step 3: sZTR allocation
+     │           └── 80 WPROS (10%) sent to distributor
+     │
+     └── Step 4: LiquidityBook seeding
+                 └── 200M tokens + 720 WPROS
+                 └── Deposited into bins around graduation price
+                 └── Pool is LIVE
+
+T+1 second: First trade executes on Zentra X
+            └── Zero slippage (liquidity already in bins)
+            └── No front-running (price known)
+            └── Smooth transition
+```
+
+### Zero Slippage on First Trades: The Killer Feature
+
+Here's what most founders don't realize:
+
+**The first trades after your launch get guaranteed execution prices.**
+
+Because liquidity seeds directly into bins at known prices, there's no price discovery chaos. The graduation price becomes the active bin price. Period.
+
+```
+Traditional DEX listing:
+├── First buyer pays $1.00 (listed price)
+├── Second buyer pays $1.05 (bots moved it)
+├── Third buyer pays $1.15 (momentum)
+├── Price discovery = chaos
+└── Real users get wrecked
+
+Zentra X graduation:
+├── Graduation price: $1.00 → Active bin
+├── First buyer pays $1.00 (exact bin price)
+├── Second buyer pays $1.00 (same bin)
+├── Third buyer pays $1.00 (still same bin)
+├── Price only moves when bin depletes
+└── Orderly market from second one
+```
+
+This is how you protect your community from bots and MEV.
+
+### Choosing Your Bin Step: A Strategic Decision
+
+Your bin step choice isn't a setting—it's a strategic decision that affects your token's trading dynamics from graduation onwards.
+
+| If You Want... | Choose | Why | Trade-off |
+|----------------|--------|-----|-----------|
+| Fast price discovery | 100 bp (1%) | Price can run up quickly | Wide gaps may reduce volume |
+| Stable accumulation | 25 bp (0.25%) | Smooth price progression | More bins to traverse |
+| Maximum precision | 10 bp (0.1%) | Tight spreads | Narrow range coverage |
+
+**The truth about wide bins (100 bp):**
+
+If your token launches with 100 bp step, price must move 1% to reach the next bin. This can be good or bad:
+
+```
+Good: If demand is strong
+├── Price runs up quickly
+├── Early buyers see gains fast
+└── Creates FOMO momentum
+
+Bad: If demand is moderate
+├── Arbitrageurs can't profit on small moves
+├── Trading volume drops
+├── Liquidity sits idle
+└── The "Grand Canyon effect"
+```
+
+**The truth about narrow bins (25 bp or less):**
+
+```
+Good: More trading activity
+├── Arbitrageurs trade the small spreads
+├── Higher volume = more fees for LPs
+└── Smoother price action
+
+Bad: Slower moon potential
+├── 25 bins to go from $1.00 to $1.06
+├── Each bin requires capital to clear
+└── Price discovery takes longer
+```
+
+<Info>
+**Founder tip:** For most token launches, 25-50 bp is the sweet spot. You get enough granularity for active trading without gaps so wide that volume dies.
+</Info>
+
+### Your Liquidity Distribution at Graduation
+
+When liquidity migrates to LiquidityBook, it's not dumped randomly. It's distributed across bins in a concentrated pattern:
+
+```
+Your ~200M tokens + ~720 WPROS distributed:
+
+Bin -2: 5% of liquidity    ▓▓
+Bin -1: 15% of liquidity   ▓▓▓▓▓
+Bin  0: 60% of liquidity   ████████████████  ← Active bin
+Bin +1: 15% of liquidity   ▓▓▓▓▓
+Bin +2: 5% of liquidity    ▓▓
+```
+
+This provides:
+- **Deep liquidity at current price** → Large trades execute smoothly
+- **Support below** → Bins ready to absorb selling
+- **Resistance above** → Bins ready for buying pressure
+- **Room to breathe** → Price can move without exhausting liquidity
+
+### What You Need to Monitor Post-Graduation
+
+Once live on Zentra X, your job isn't done:
+
+1. **Watch liquidity depth** → Are LPs joining your pool?
+2. **Check active bin** → Is trading happening where liquidity exists?
+3. **Consider incentives** → Apply for gauge voting to attract more LPs
+4. **Engage your community** → LPs need confidence in your token's future
+
+## Summary
+
+The launchpad-DLMM integration creates seamless token lifecycle:
+
+| Stage | System | Key Feature |
+|-------|--------|-------------|
+| Launch | Bonding Curve | Virtual liquidity, anti-sniper |
+| Distribution | Bonding Curve | Constant product pricing |
+| Graduation | Atomic Transition | sZTR rewards, liquidity migration |
+| Trading | LiquidityBook | Concentrated liquidity, dynamic fees |
+
+**The baton pass is everything.** ZentraFi ensures you never drop it.
+
+No other platform offers this unified flow from token creation to concentrated liquidity markets.

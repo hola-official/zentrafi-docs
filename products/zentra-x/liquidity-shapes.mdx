@@ -1,111 +1,315 @@
 ---
 title: 'Liquidity Shapes'
-description: 'Choose the right distribution strategy for your LP position'
+description: 'Strategic LP positioning: choosing the right distribution for your goals'
 ---
 
-## Overview
+## Beyond Settings: These Are Strategies
 
-When providing liquidity on Zentra X, you choose how to distribute capital across price bins. Each shape has different risk/reward characteristics.
+Choosing a liquidity shape isn't like picking a font size. It's a strategic decision that determines how your capital behaves in different market conditions.
 
-## Shapes
+This guide will help you think like a market maker, not just a button-clicker.
 
-### Spot (Uniform)
+## Meet Larry: Your Guide to LP Strategy
+
+Throughout this guide, we'll follow Larry, a liquidity provider with $10,000 to deploy. Larry's decisions will show you how each shape works in practice.
+
+---
+
+## Spot Shape: The Versatile Workhorse
 
 <Frame>
   <img src="/images/spot-shape.png" alt="Spot Distribution" style={{ borderRadius: '8px' }} />
 </Frame>
 
-Equal liquidity across all selected bins.
+**What it is:** Equal liquidity across all selected bins. A flat, uniform distribution.
 
-| Attribute | Value |
-|-----------|-------|
-| Distribution | Uniform |
-| Best for | Ranging markets, passive LPs, uncertain direction |
-| Risk level | Medium |
-| Rebalancing | Low frequency |
+### Larry's Scenario: The Uncertain Market
 
-**When to use:**
-- You're new to LP
-- Market has no clear trend
-- You want less active management
+Larry is looking at ETH/USDC. He thinks ETH might go up, might go down, might chop sideways. He has no strong conviction.
+
+**Larry's choice:** Spot shape across 50 bins (covering ~12.5% price range with 25bp steps).
+
+```
+Larry's $10,000 spread across 50 bins:
+$200 per bin, covering $1,800 to $2,025
+
+Price moves to $1,900?  Larry earns fees.
+Price moves to $2,100?  Larry earns fees.
+Price stays at $2,000?  Larry earns fees.
+```
+
+**The trade-off:** Larry earns fees in any direction, but each bin only has $200. A trader swapping $5,000 will clear multiple bins and move the price. Larry captures less per trade than a concentrated position would.
+
+### Wide vs. Concentrated Spot
+
+| Variation | Bins | Larry's Strategy | Management |
+|-----------|------|------------------|------------|
+| **Wide Spot** (50+ bins) | Covers huge range | "I'll check this next week" | Passive |
+| **Normal Spot** (10-20 bins) | Balanced coverage | "I'll check daily" | Moderate |
+| **Concentrated Spot** (3-5 bins) | Tight range | "I'm watching every hour" | Active |
+
+<Warning>
+**Concentrated Spot Warning:** If you select only 3 bins and the price moves beyond them, you earn zero fees and hold 100% of one asset. This requires active monitoring.
+</Warning>
+
+### Best For
+
+- New LPs learning the system
+- Uncertain market direction
+- "Set and forget" passive income
+- Volatile assets where you can't predict direction
 
 ---
 
-### Curve (Concentrated)
+## Curve Shape: Maximum Capital Efficiency
 
 <Frame>
   <img src="/images/curve-shape.png" alt="Curve Distribution" style={{ borderRadius: '8px' }} />
 </Frame>
 
-Heavy allocation at current price, tapering outward.
+**What it is:** Heavy allocation at current price, tapering outward. A bell curve distribution.
 
-| Attribute | Value |
-|-----------|-------|
-| Distribution | Bell curve |
-| Best for | Stable pairs, high conviction, max fee capture |
-| Risk level | Higher |
-| Rebalancing | Frequent |
+### Larry's Scenario: The Stablecoin Play
 
-**When to use:**
-- Stablecoin pairs (USDC/USDT)
-- You expect price to stay in tight range
-- You want maximum capital efficiency
+Larry sees USDC/USDT trading at $1.0000. He knows stablecoins almost never move more than 0.1% from peg. Why spread liquidity across prices that will never happen?
+
+**Larry's choice:** Curve shape with 70% of his capital in the active bin, 20% in adjacent bins, 10% on the edges.
+
+```
+Larry's $10,000 in curve shape:
+Active bin ($1.0000):  $7,000
+Adjacent bins:         $2,000
+Edge bins:             $1,000
+
+A $1,000 trade happens entirely in the active bin.
+Larry earns fees on the full trade.
+```
+
+**The payoff:** Larry's capital efficiency is nearly 100%. Every trade goes through his concentrated liquidity. He earns maximum fees per dollar deployed.
+
+### The Risk: Going Idle
+
+Here's what the tables don't tell you: **curve positions can go idle**.
+
+If the price moves outside Larry's narrow bell curve:
+
+```
+Price drifts to $1.002 (rare for stablecoins, but possible):
+├── Larry's position: 100% USDC, 0% USDT
+├── Active bin: Now empty
+├── Fees earned: $0.00
+└── Larry is "holding the bag"
+```
+
+<Warning>
+**Curve Shape Warning:** The "higher risk" in this strategy isn't losing money to hacks. It's **opportunity cost**. If price moves away from your curve, your capital sits idle earning nothing while you wait for price to return. For stable pairs, this is unlikely. For volatile pairs, this happens constantly.
+</Warning>
+
+### Best For
+
+- Stablecoin pairs (USDC/USDT, DAI/USDC)
+- Pegged assets (stETH/ETH, wBTC/BTC)
+- High conviction that price stays in tight range
+- LPs who actively monitor and rebalance
 
 ---
 
-### Bid-Ask
+## Bid-Ask Shape: The Volatility Trap
 
 <Frame>
   <img src="/images/bid-ask-shape.png" alt="Bid-Ask Distribution" style={{ borderRadius: '8px' }} />
 </Frame>
 
-Capital on both ends with gap around current price.
+**What it is:** Capital on both ends with a gap around the current price. An inverted curve.
 
-| Attribute | Value |
-|-----------|-------|
-| Distribution | Inverted curve |
-| Best for | Volatile pairs, DCA strategies, capturing swings |
-| Risk level | Lower IL risk |
-| Rebalancing | Moderate |
+### Wait, Why Would I Want a Gap?
 
-**When to use:**
-- You expect large price swings
-- Natural dollar-cost averaging
+This is the most misunderstood shape. New LPs look at bid-ask and think: "Why would I leave a hole in the middle? The current price is where all the trading happens!"
+
+That's exactly the point. Let Larry explain.
+
+### Larry's Scenario: The Range Trader
+
+Larry has been watching a token called MEME. For the past month, it's been bouncing between $0.90 and $1.10. Every time it hits $0.90, buyers step in. Every time it hits $1.10, sellers appear.
+
+Larry doesn't want to provide liquidity at $1.00. That's dead money. He wants to **catch the bounces**.
+
+**Larry's choice:** Bid-Ask shape with walls at $0.90 (buy wall) and $1.10 (sell wall).
+
+```
+Larry's $10,000 volatility trap:
+$5,000 at $0.90 bins (ready to buy MEME)
+$0 at $1.00 (intentional gap)
+$5,000 at $1.10 bins (ready to sell MEME)
+
+Day 1: Price drops to $0.90
+       Larry's buy wall absorbs sellers
+       Larry now holds MEME at $0.90
+
+Day 3: Price rises to $1.10
+       Larry's sell wall absorbs buyers
+       Larry sells MEME at $1.10
+       Larry profits: $0.20/token + fees
+```
+
+**The strategy:** Larry isn't providing liquidity. He's **setting a trap**. He captures the volatility swings while ignoring the stagnant middle.
+
+### When Bid-Ask Fails
+
+The trap only works if price actually bounces. If MEME breaks out to $1.50 and never returns:
+
+```
+Price moons to $1.50:
+├── Larry sold all his MEME at $1.10
+├── Larry missed the rally
+├── Larry is now 100% in quote token
+└── Larry earned fees, but missed the moon
+```
+
+<Info>
+**Pro tip:** Bid-Ask is essentially automated dollar-cost averaging (DCA). You're systematically buying low and selling high. This is a mean-reversion bet.
+</Info>
+
+### Best For
+
+- Range-bound markets with clear support/resistance
 - Mean reversion strategies
+- LPs who believe price will oscillate
+- Lower impermanent loss risk (you're not holding through big moves)
 
-## Spot Variations
+---
 
-For more granular control, Spot shape has concentration options:
-
-| Variation | Bins | Use Case | Management |
-|-----------|------|----------|------------|
-| **Concentrated** | 1-3 | Stables, max efficiency | Very active |
-| **Normal** | 10-20 | Standard pairs | Daily check |
-| **Wide** | 50+ | Volatile pairs, hands-off | Passive |
-
-## Choosing a Shape
+## Choosing Your Shape: The Decision Tree
 
 ```
-Is the pair stable (e.g., USDC/USDT)?
-├── Yes → Curve (tight)
-└── No
-    ├── Do you expect a trend?
-    │   ├── Yes → Single-sided or Bid-Ask
-    │   └── No → Spot
-    └── High volatility expected?
-        ├── Yes → Spot (wide) or Bid-Ask
-        └── No → Spot (normal) or Curve
+What kind of LP are you?
+
+├── "I just want passive income"
+│   └── Spot (Wide) — Set it and check weekly
+│
+├── "I want maximum efficiency on stable pairs"
+│   └── Curve — But watch for depegs!
+│
+├── "I think this token will range between $X and $Y"
+│   └── Bid-Ask — Set your trap at the edges
+│
+├── "I have no idea what price will do"
+│   └── Spot (Normal) — Balanced coverage
+│
+└── "I'm a degen and I'll monitor 24/7"
+    └── Curve (Tight) or Concentrated Spot — Max fees, max risk
 ```
 
-## Bin Step Selection
+---
 
-Bin step determines price granularity:
+## Bin Step Selection: The Hidden Complexity
 
-| Bin Step | Price Increment | Best For |
-|----------|-----------------|----------|
-| 1 bp | 0.01% | Stablecoins |
-| 10 bp | 0.1% | Major pairs |
-| 25 bp | 0.25% | Standard tokens |
-| 100 bp | 1% | Volatile/new tokens |
+Now that you understand shapes, you need to choose bin step. This determines how granular your price levels are.
 
-Smaller steps = more precision, but narrower max range per position.
+### The Trade-Offs Nobody Explains
+
+| Bin Step | Price Increment | You Get | You Lose |
+|----------|-----------------|---------|----------|
+| **1 bp** | 0.01% | Extreme precision | Narrow max range, constant rebalancing |
+| **10 bp** | 0.1% | Good precision | Moderate range |
+| **25 bp** | 0.25% | Balanced | Standard trade-off |
+| **100 bp** | 1% | Wide range, passive | Gaps between prices, lower volume |
+
+### The 1 Basis Point Trap
+
+Larry thinks: "1 bp is the most precise. I'll capture every tiny price movement!"
+
+**Reality check:**
+
+```
+Larry chooses 1 bp bin step:
+├── His position covers a 0.5% price range max
+├── ETH moves 0.6% in an hour (normal volatility)
+├── Larry's position is now out of range
+├── Larry earns $0 until he rebalances
+├── Larry needs to rebalance 10x per day
+└── Larry's gas costs eat his profits
+```
+
+<Warning>
+**1 BP Warning:** This requires 24/7 monitoring and frequent rebalancing. Unless you're running a bot, you'll spend more on gas than you earn in fees. Only for stablecoins or algorithmic market makers.
+</Warning>
+
+### The 100 Basis Point Trap
+
+Larry thinks: "100 bp means wide coverage. I can be totally passive!"
+
+**Reality check:**
+
+```
+Larry chooses 100 bp bin step:
+├── Price must move 1% to reach next bin
+├── Small arbitrageurs can't profit on tiny moves
+├── Arbitrageurs (who create most volume) don't trade
+├── Volume drops
+├── Larry's fee earnings drop
+└── Larry's capital is "safe" but unproductive
+```
+
+This is the **Grand Canyon effect**. If the gaps between bins are too wide, traders have no reason to trade the small moves. Your liquidity sits there doing nothing.
+
+<Warning>
+**100 BP Warning:** Wide steps handle volatility well but may result in significantly lower trading volume. Your capital is protected but potentially idle.
+</Warning>
+
+### Bin Step Recommendations
+
+| Asset Type | Recommended Step | Why |
+|------------|------------------|-----|
+| Stablecoins | 1-5 bp | Price barely moves, need precision |
+| Major pairs (ETH/USDC) | 10-25 bp | Balance of efficiency and range |
+| Standard tokens | 25-50 bp | Normal volatility |
+| New/volatile tokens | 50-100 bp | Wide swings, need coverage |
+
+---
+
+## Management Reality Check
+
+Let's be honest about what each setup requires:
+
+| Setup | Daily Time | Rebalancing | Best For |
+|-------|------------|-------------|----------|
+| Wide Spot, 50bp step | 0 mins | Weekly/never | Busy people |
+| Normal Spot, 25bp step | 5 mins | Every few days | Part-time LPs |
+| Curve, 25bp step | 15 mins | Daily | Serious LPs |
+| Concentrated, 10bp step | 30+ mins | Multiple times daily | Professionals |
+| Tight Curve, 1bp step | Constant | Continuous | Bots only |
+
+Choose the strategy that matches your lifestyle, not just your profit goals.
+
+---
+
+## Quick Reference: Shape Comparison
+
+| Shape | Capital Distribution | Best Market | Risk Profile | Effort |
+|-------|---------------------|-------------|--------------|--------|
+| **Spot (Wide)** | Uniform, spread out | Uncertain/volatile | Low | Passive |
+| **Spot (Tight)** | Uniform, concentrated | Ranging | Medium | Active |
+| **Curve** | Bell curve | Stable/pegged | Higher (idle risk) | Active |
+| **Bid-Ask** | Edges only | Range-bound | Lower IL | Moderate |
+
+---
+
+## The Bottom Line
+
+Liquidity shapes aren't settings. They're strategies.
+
+- **Spot** = "I don't know what'll happen, cover my bases"
+- **Curve** = "I'm confident price stays here, maximize efficiency"
+- **Bid-Ask** = "I'm betting on mean reversion, catch the swings"
+
+Choose based on your market thesis, your risk tolerance, and honestly, how much time you want to spend managing your position.
+
+<CardGroup cols={2}>
+  <Card title="Understand DLMM" icon="book" href="/core-concepts/dynamic-liquidity-market-maker-dlmm">
+    Learn how bins and fees work
+  </Card>
+  <Card title="Start Trading" icon="arrow-right-arrow-left" href="https://x.zentrafi.xyz">
+    Deploy your first position
+  </Card>
+</CardGroup>

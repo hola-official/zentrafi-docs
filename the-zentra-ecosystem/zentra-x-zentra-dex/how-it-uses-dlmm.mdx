@@ -5,7 +5,7 @@ description: 'Technical details of how Zentra X implements the Liquidity Book mo
 
 ## Implementation Overview
 
-Zentra X implements the Liquidity Book (DLMM) model developed by Trader Joe. This page covers the specific implementation details and how they apply to trading on Pharos.
+Zentra X implements the Liquidity Book (DLMM) model developed by Trader Joe. This page covers the specific implementation details and contract architecture.
 
 ## Contract Architecture
 
@@ -299,14 +299,14 @@ ILBRouter.swapExactTokensForTokens(
 ### Multi-Hop Swap
 
 ```solidity
-// USDC → PHRS → TOKEN
+// USDC → WETH → TOKEN
 ILBRouter.swapExactTokensForTokens(
     amountIn: 1000e6,
     amountOutMin: 100e18,
     path: Path({
         pairBinSteps: [25, 50],
         versions: [Version.V2, Version.V2],
-        tokenPath: [USDC, PHRS, TOKEN]
+        tokenPath: [USDC, WETH, TOKEN]
     }),
     to: msg.sender,
     deadline: block.timestamp + 300

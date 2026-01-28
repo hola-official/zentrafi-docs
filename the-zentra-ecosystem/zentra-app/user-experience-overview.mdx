@@ -5,9 +5,9 @@ description: 'User guide for the ZentraFi launchpad interface'
 
 ## What is Zentra App?
 
-Zentra App is ZentraFi's token launchpad interface: where projects create launches and users participate in token distributions.
+Zentra App is ZentraFi's token launchpad interface: where projects create tokens and users participate in bonding curve trading before graduation to Zentra X.
 
-Unlike traditional launchpads that require technical setup and manual liquidity bootstrapping, Zentra App handles everything through a streamlined interface.
+Unlike traditional launchpads that require manual liquidity bootstrapping, Zentra App handles everything through a streamlined interface—tokens graduate automatically to concentrated liquidity pools.
 
 ## Interface Overview
 
@@ -15,55 +15,53 @@ Unlike traditional launchpads that require technical setup and manual liquidity 
 
 The main dashboard displays:
 
-- **Active Launches**: Currently running token distributions
-- **Upcoming Launches**: Scheduled launches with countdown timers
-- **Completed Launches**: Past launches with performance data
-- **Your Participation**: Launches you've joined and tokens to claim
+- **Active Tokens**: Currently trading on bonding curves
+- **Recently Graduated**: Tokens that moved to Zentra X
+- **Your Holdings**: Tokens you've purchased
+- **Graduation Progress**: How close each token is to graduating
 
-### Launch Cards
+### Token Cards
 
-Each launch displays key information:
+Each token displays key information:
 
 ```
 ┌─────────────────────────────────────────┐
-│  PROJECT TOKEN                    Live  │
+│  PROJECT TOKEN                   Active  │
 │  ─────────────────────────────────────  │
 │  Price: $0.0052      Progress: 67%      │
-│  Raised: $335,000    Target: $500,000   │
+│  MCap: $52,000       To Graduate: $48k  │
 │  ─────────────────────────────────────  │
-│  Curve: Exponential   Ends: 12h 34m     │
-│  Liquidity: 80%                         │
+│  Tokens Left: 330M   Created: 2h ago    │
 │                                         │
-│  [View Details]        [Participate]    │
+│  [View Details]           [Buy / Sell]  │
 └─────────────────────────────────────────┘
 ```
 
 ## For Participants
 
-### Finding Launches
+### Finding Tokens
 
-**Browse Active Launches:**
-1. Navigate to "Launches" tab
-2. Filter by status (Active/Upcoming/Completed)
-3. Sort by raise amount, time remaining, or price
+**Browse Active Tokens:**
+1. Navigate to "Tokens" tab
+2. Filter by status (Active/Graduated)
+3. Sort by market cap, age, or graduation progress
 
-**Launch Details Page:**
+**Token Details Page:**
 - Token information (name, symbol, supply)
-- Curve parameters and visualization
-- Cap structure (soft/hard caps)
-- Team and project information
+- Current price and market cap
+- Graduation progress (% of supply distributed)
+- Social links and project information
 - Contract addresses
 
-### Participating in a Launch
+### Buying Tokens
 
-**Step 1: Review Launch Details**
+**Step 1: Review Token Details**
 
-Before participating, verify:
-- [ ] Curve type and parameters
-- [ ] Liquidity allocation percentage
-- [ ] Time remaining
-- [ ] Current price vs. start price
-- [ ] Project legitimacy
+Before buying, check:
+- [ ] Current price and market cap
+- [ ] Graduation progress (how close to 20% remaining)
+- [ ] Anti-sniper status (wait 30s after launch for best rates)
+- [ ] Project legitimacy and socials
 
 **Step 2: Connect Wallet**
 
@@ -75,180 +73,188 @@ Supported wallets:
 
 **Step 3: Enter Amount**
 
-- Input participation amount in quote token (usually USDC)
+- Input the native currency amount to spend
 - Review estimated tokens at current price
-- Note: Final tokens may vary as price changes with your purchase
+- Note: Your purchase moves the price up (constant product AMM)
 
 **Step 4: Confirm Transaction**
 
-- Approve token spending (first time only)
-- Confirm participation transaction
+- Approve spending (first time only)
+- Confirm buy transaction
 - Wait for confirmation
 
-**Step 5: Track Position**
+<Warning>
+**Anti-sniper protection:** Trades within 30 seconds of launch have a decaying tax (starts at 94%). Wait for the timer to expire for best prices.
+</Warning>
 
-After participation:
-- View your contribution amount
-- See estimated token allocation
-- Monitor launch progress
+### Selling Tokens
 
-### Claiming Tokens
+**Before Graduation:**
+- You can sell tokens back to the bonding curve
+- Selling moves the price down
+- 2% sell fee applies (vs 1% buy fee)
 
-When launch completes:
+**After Graduation:**
+- Trade on Zentra X with concentrated liquidity
+- Full ERC-20 transferability
+- Standard DEX trading experience
 
-1. Navigate to "Your Launches" or launch page
-2. Click "Claim Tokens"
-3. Confirm transaction
-4. Tokens arrive in your wallet
+### Token Restrictions
+
+**Before graduation, tokens cannot be:**
+- Transferred to other wallets
+- Listed on external exchanges
+- Added to external liquidity pools
+
+This prevents manipulation and ensures orderly graduation.
+
+### Graduation
+
+When a token's reserve drops below 20% of supply:
+
+1. Token automatically graduates
+2. Transfer restrictions lift
+3. sZTR holders receive 10% of raised funds
+4. Remaining liquidity migrates to Zentra X
+5. Trading continues on LiquidityBook
 
 <Info>
-Token claims are available immediately after launch finalization. No vesting or lockups unless specified by the project.
+Graduation happens automatically during a buy transaction when the threshold is reached. No manual action required.
 </Info>
-
-### Refunds (Failed Launches)
-
-If a launch doesn't reach soft cap:
-
-1. Launch marked as "Failed"
-2. Navigate to the launch page
-3. Click "Claim Refund"
-4. Receive full contribution back
 
 ## For Project Creators
 
-### Creating a Launch
+### Creating a Token
 
 **Step 1: Configure Token**
 
 ```
 Token Name: [Project Token]
 Symbol: [PROJ]
-Total Supply: [1,000,000,000]
 Decimals: [18]
+Description: [Your project description]
+Image URL: [Logo image URL]
+Twitter: [@yourproject]
+Telegram: [t.me/yourproject]
+Website: [https://yourproject.com]
 ```
 
-**Step 2: Set Launch Parameters**
+**Step 2: Pay Launch Fee**
 
-| Parameter | Description |
-|-----------|-------------|
-| Start Price | Initial price on curve |
-| Curve Type | Linear/Exponential/Sigmoid |
-| Curve Parameter | Steepness factor |
-| Soft Cap | Minimum raise for success |
-| Hard Cap | Maximum raise amount |
-| Duration | Launch window length |
-| Liquidity % | Portion seeded to DEX |
+- Launch fee: 0.01 native tokens
+- Prevents spam launches
+- Token and pool deploy instantly
 
-**Step 3: Configure Allocation**
+**Step 3: Token Goes Live**
 
-Define how tokens are distributed:
-- Launch allocation (sold via curve)
-- Liquidity allocation (paired with raise)
-- Team allocation (if any, with vesting)
-- Reserve allocation (treasury, etc.)
+Your token immediately:
+- Has a bonding curve pool with virtual liquidity
+- Can be bought/sold by anyone
+- Starts earning creator fees (20% of trading fees)
+- Has anti-sniper protection for 30 seconds
 
-**Step 4: Review and Deploy**
+### Launch Economics
 
-- Preview launch page
-- Verify all parameters
-- Deploy launch contract
-- Schedule start time
+| Metric | Default Value |
+|--------|---------------|
+| Initial supply | 1,000,000,000 tokens |
+| Initial market cap | ~$4,000 equivalent |
+| Graduation threshold | 20% of tokens remaining |
+| Graduation market cap | ~$100,000 equivalent |
+| Capital to graduate | ~$16,000 equivalent |
 
-### Managing Active Launches
+### Creator Benefits
 
-During a launch, creators can:
+As the token creator, you receive:
 
-- Monitor participation metrics
-- View real-time price
-- Track progress toward caps
-- Communicate with participants (external)
+- **20% of trading fees** during bonding curve phase
+- Fees distributed to your wallet automatically
+- Tracked via `FeesDistributed` events
 
-<Warning>
-Launch parameters cannot be changed after deployment. Verify everything before going live.
-</Warning>
+### Post-Graduation
 
-### Post-Launch
+After graduation:
 
-After completion:
-
-1. **Automatic liquidity seeding**: Configured % flows to Zentra X
-2. **Token distribution**: Participants can claim
-3. **Trading activation**: Pool goes live
-4. **Analytics access**: View final metrics
+1. **Automatic liquidity seeding**: 90% of raised funds go to Zentra X pool
+2. **sZTR rewards**: 10% distributed to protocol stakers
+3. **Trading continues**: Now on concentrated liquidity
+4. **Your role**: Support community, build utility
 
 ## Interface Features
 
 ### Price Visualization
 
-Real-time curve visualization shows:
-- Current position on curve
-- Tokens sold vs. remaining
-- Price trajectory
-- Your potential entry point
+Real-time display shows:
+- Current price on bonding curve
+- Token reserve remaining
+- Graduation progress bar
+- Price history chart
 
-### Notification System
+### Anti-Sniper Timer
 
-Opt-in notifications for:
-- Launch start alerts
-- Cap milestone alerts
-- Launch completion
-- Claim availability
+For new launches:
+- Countdown from 30 seconds
+- Current tax rate displayed
+- "Safe to buy" indicator when timer ends
 
 ### Portfolio Tracking
 
-Track across all launches:
+Track across all tokens:
 - Total invested
-- Tokens received
 - Current value
-- Performance metrics
+- Unrealized P&L
+- Tokens pending graduation
 
 ## Security Considerations
 
-### Before Participating
+### Before Buying
 
 1. **Verify contract addresses**: Check against official sources
-2. **Review curve parameters**: Understand pricing mechanics
-3. **Check liquidity allocation**: Higher % = deeper markets
-4. **Research the project**: Due diligence on team and utility
+2. **Wait for anti-sniper**: 30 seconds saves you 94%
+3. **Research the project**: Check socials and team
+4. **Understand graduation**: Tokens locked until threshold reached
 
-### During Participation
+### During Trading
 
-- Approve only the amount you intend to spend
+- Only approve amounts you intend to spend
 - Use hardware wallets for large amounts
-- Double-check transaction details before confirming
+- Double-check transaction details
 
-### After Launch
+### After Graduation
 
-- Verify received tokens match expectations
-- Check liquidity pool is funded
-- Monitor for any irregularities
+- Verify your tokens are transferable
+- Check Zentra X pool is live
+- Full trading now available
 
 ## Additional Tools
 
 Zentra App includes more than just token launches:
 
 <CardGroup cols={3}>
-  <Card title="Token Types" icon="coins" href="/docs/the-zentra-ecosystem/zentra-app/token-types">
+  <Card title="Token Types" icon="coins" href="/the-zentra-ecosystem/zentra-app/token-types">
     Choose the right token for your project
   </Card>
-  <Card title="Token Locker" icon="lock" href="/docs/the-zentra-ecosystem/zentra-app/token-locker">
+  <Card title="Token Locker" icon="lock" href="/the-zentra-ecosystem/zentra-app/token-locker">
     Lock tokens with vesting schedules
   </Card>
-  <Card title="Airdrop" icon="parachute-box" href="/docs/the-zentra-ecosystem/zentra-app/airdrop">
+  <Card title="Airdrop" icon="parachute-box" href="/the-zentra-ecosystem/zentra-app/airdrop">
     Distribute tokens to many wallets
   </Card>
 </CardGroup>
 
 ## Common Questions
 
-**Q: Can I participate multiple times?**
-A: Yes. Each participation is a separate purchase at the current price.
+**Q: Can I buy multiple times?**
+A: Yes. Each purchase is at the current price, which increases as supply decreases.
 
 **Q: What if price changes while my transaction is pending?**
-A: You'll receive tokens at the price when your transaction executes, which may differ from when you submitted.
+A: You'll receive tokens at the price when your transaction executes. Use slippage protection for large purchases.
 
-**Q: Can I sell during the launch?**
-A: No. Trading activates only after launch completion and liquidity seeding.
+**Q: Can I transfer tokens before graduation?**
+A: No. Tokens are non-transferable until graduation. You can only sell back to the bonding curve.
 
-**Q: What happens to unsold tokens?**
-A: Depends on launch configuration: may be burned, sent to treasury, or allocated to liquidity.
+**Q: What happens if graduation never occurs?**
+A: You can always sell back to the pool. The bonding curve remains active indefinitely until graduation triggers.
+
+**Q: How do I know when a token will graduate?**
+A: Watch the "Tokens Remaining" counter. Graduation triggers at 20% (200M tokens remaining from 1B supply).

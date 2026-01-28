@@ -1,88 +1,207 @@
 ---
 title: "Providing Liquidity"
-description: "How to provide liquidity on Zentra X"
+description: "Your step-by-step guide to earning fees on Zentra X"
 ---
 
-## Overview
+<Info>
+**New to DLMM?** Read [Why DLMM Matters](/core-concepts/dynamic-liquidity-market-maker-dlmm) first to understand why concentrated liquidity earns more.
+</Info>
 
-Liquidity provision on Zentra X uses the Liquidity Book model. You allocate capital across specific price bins rather than a single pool position.
+## Quick Start: Your First LP Position
 
-## How It Works
+### Step 1: Choose Your Pool
 
-### Bin-Based Positions
+Navigate to Zentra X and find a pool that matches your:
+- **Risk tolerance**: Stablecoin pairs = low risk, volatile tokens = high risk
+- **Capital**: More capital = more flexibility in range
+- **Time commitment**: Wide ranges = passive, tight ranges = active
 
-When you provide liquidity, you deposit into price bins:
+### Step 2: Select Your Shape
+
+| Shape | Best For | Management |
+|-------|----------|------------|
+| **Spot (Wide)** | "I'll check next week" | Passive |
+| **Spot (Normal)** | "I'll check daily" | Light |
+| **Curve** | "I'm confident in this range" | Active |
+| **Bid-Ask** | "I'm betting on bounces" | Moderate |
+
+See [Liquidity Shapes](/products/zentra-x/liquidity-shapes) for detailed strategy guidance (including Larry's scenarios).
+
+### Step 3: Set Your Range
+
+How many bins to cover:
+- **3-5 bins**: Maximum efficiency, maximum attention required
+- **10-20 bins**: Balanced approach for most users
+- **50+ bins**: Set and forget
+
+### Step 4: Deposit
+
+1. Approve token spending
+2. Confirm deposit transaction
+3. Done! You're now earning fees.
+
+## How You Earn
+
+### The Active Bin Rule
+
+Only the **active bin** earns trading fees. Your earnings depend on:
 
 ```
-Your Position:
-├── Bin 8388606 ($0.99): 500 USDC
-├── Bin 8388608 ($1.00): 1000 USDC  ← Active bin
-├── Bin 8388610 ($1.01): 500 USDC
-└── Total: 2000 USDC
+Your Fee Share = (Your Liquidity in Active Bin / Total Bin Liquidity) × Fees
+```
+
+**Practical example:**
+
+```
+Pool: ETH/USDC
+Active bin: $2,000
+Total bin liquidity: $100,000
+Your contribution: $5,000 (5%)
+
+Trade happens: 10 ETH bought ($20,000 volume)
+Fee rate: 0.3%
+Total fees: $60
+
+Your earnings: $60 × 5% = $3.00
+```
+
+### Why Concentration Matters
+
+| Strategy | Your $10,000 | Fees on $100k volume |
+|----------|--------------|---------------------|
+| Spread across 100 bins | $100/bin | ~$0.30 |
+| Concentrated in 10 bins | $1,000/bin | ~$3.00 |
+| Concentrated in 3 bins | $3,333/bin | ~$10.00 |
+
+Same capital. Same volume. **33x more fees** when concentrated.
+
+## Understanding Your Position
+
+### Position Display
+
+```
+Your ETH/USDC Position:
+├── Total Value: $10,234
+├── Current Range: $1,950 - $2,100
+├── In Range: ✅ Yes
+├── Active Bin Share: 4.2%
+├── Unclaimed Fees: $127.50
+└── Position Age: 12 days
 ```
 
 ### Token Composition
 
-| Bin Location | You Deposit | Why |
-|--------------|-------------|-----|
-| Below active | Token Y only | Bins "sold out" of X |
-| Active bin | Both tokens | Mixed |
-| Above active | Token X only | Bins "sold out" of Y |
+Your tokens shift as price moves:
 
-### Fee Earning
+| Price Moves | Your Position Becomes | Why |
+|-------------|----------------------|-----|
+| Price up | More quote (USDC) | You sold ETH as it rose |
+| Price down | More base (ETH) | You bought ETH as it fell |
+| Price stable | Roughly 50/50 | No significant trading |
 
-Only the **active bin** earns fees. Your earnings depend on:
-- Your share of the active bin
-- Trading volume
-- Current fee level (dynamic)
+This is normal AMM behavior. It's not a bug, it's how LPs provide liquidity.
 
-## Adding Liquidity
+## Managing Your Position
 
-1. **Select Pool**: Choose token pair, review stats
-2. **Choose Shape**: [Select distribution strategy](/docs/products/zentra-x/liquidity-shapes)
-3. **Set Range**: How many bins to cover
-4. **Deposit**: Approve and confirm transaction
+### When to Rebalance
 
-## Managing Positions
+**Consider rebalancing when:**
+- Position is 100% one token (fully out of range)
+- More than 50% of position is out of range
+- Market conditions fundamentally changed
 
-**Monitor:**
-- Current value and fees earned
-- In-range status
-- Bin distribution
+**Don't panic rebalance when:**
+- Position temporarily out of range (it may return)
+- Small movements in/out of range
+- You're just checking because you're bored
 
-**Rebalance when:**
-- Position mostly out of range
-- IL exceeds fee earnings
-- Market conditions changed
+### Rebalancing Process
 
-**Claim fees:**
-- No lockup, claim anytime
-- Paid in LP tokens
+1. **Assess**: Is rebalancing worth the gas cost?
+2. **Withdraw**: Remove liquidity from current bins
+3. **Reposition**: Add to new bins around current price
+4. **Confirm**: Check new position is in range
+
+<Warning>
+**Gas costs matter.** Rebalancing a $1,000 position that's slightly out of range for $0.50 in fees doesn't make sense. Be patient.
+</Warning>
+
+### Claiming Fees
+
+- Fees accrue automatically
+- Claim anytime (no lockup)
+- Paid in the pool's tokens
+- Consider claiming when fees > gas cost
 
 ## Risk Factors
 
-### Impermanent Loss
+### Impermanent Loss (IL)
 
-- **Within bin**: No IL (constant sum formula)
+IL happens when price moves away from your entry. In DLMM:
+
+- **Within a bin**: Zero IL (constant sum formula)
 - **Across bins**: Discrete IL when bins flip
 
-### Concentration Trade-off
+**IL mitigation strategies:**
+1. Use wider ranges (lower IL, lower fees)
+2. Choose less volatile pairs
+3. Accept IL as the cost of earning fees
+4. Use Bid-Ask shape to catch swings
 
-| Width | Fee Potential | IL Risk | Management |
-|-------|---------------|---------|------------|
-| Wide | Lower | Lower | Passive |
-| Medium | Moderate | Moderate | Occasional |
-| Tight | Higher | Higher | Active |
+### The Idle Position Problem
+
+If price moves outside your range:
+- You stop earning fees
+- Your position becomes 100% one token
+- You're waiting for price to return
+
+**This is why shape and range matter.** Too tight = more idle time.
+
+### Volatility Risk
+
+During volatile periods:
+- More bin crossings = more IL
+- BUT: Dynamic fees increase, compensating you
+- Net result: You're protected compared to traditional AMMs
 
 ## Quick Tips
 
+### Do
+
+- Start with a moderate range until you understand the mechanics
+- Check your position daily if using concentrated strategies
+- Use dynamic fees to your advantage during volatility
+- Claim fees regularly if amounts are significant
+
+### Don't
+
+- Go maximum concentration without monitoring capability
+- Ignore IL in trending markets (fees may not compensate)
+- Over-trade (gas costs compound)
+- Chase the highest APR without understanding the risk
+
 <Warning>
-**Common mistakes to avoid:**
-- Too concentrated without monitoring
-- Ignoring IL during trends
-- Over-trading (gas costs add up)
+**Common mistakes:**
+- Setting 3-bin range and forgetting to check for a week
+- Rebalancing every time position goes slightly out of range
+- Ignoring that your position is now 95% MEME token and 5% USDC
 </Warning>
 
-<Card title="Choose Your Shape" icon="chart-pie" href="/docs/products/zentra-x/liquidity-shapes">
-  Learn about Spot, Curve, and Bid-Ask distributions
-</Card>
+## Concentration Trade-offs
+
+| Width | Fee Potential | IL Risk | Management | Best For |
+|-------|---------------|---------|------------|----------|
+| Wide (50+ bins) | Lower | Lower | Passive | Busy people, volatile tokens |
+| Medium (10-20) | Moderate | Moderate | Daily check | Balanced approach |
+| Tight (3-5 bins) | Higher | Higher | Active | Stables, experienced LPs |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Choose Your Strategy" icon="chart-pie" href="/products/zentra-x/liquidity-shapes">
+    Learn Spot, Curve, and Bid-Ask shapes
+  </Card>
+  <Card title="Technical Deep Dive" icon="code" href="/products/zentra-x/dlmm-concepts">
+    Understand bin mechanics and formulas
+  </Card>
+</CardGroup>

@@ -1,227 +1,265 @@
 ---
 title: 'Trading & Liquidity Flows'
-description: 'How tokens move through the ZentraFi ecosystem'
+description: 'How tokens move through the ZentraFi ecosystem from launch to graduation'
 ---
 
 ## Flow Overview
 
-ZentraFi creates a continuous flow from token creation to active trading:
+ZentraFi creates a continuous flow from token creation through graduation to open market trading:
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Creation   │ ──► │    Launch    │ ──► │   Trading    │
-│              │     │              │     │              │
-│  Configure   │     │  Distribute  │     │   Swap on    │
-│  parameters  │     │  via curve   │     │   Zentra X   │
+│   Creation   │ ──► │   Bonding    │ ──► │  Graduation  │
+│              │     │   Curve      │     │              │
+│  Deploy via  │     │  Trade via   │     │  Migrate to  │
+│   Factory    │     │   Router     │     │ LiquidityBook│
 └──────────────┘     └──────────────┘     └──────────────┘
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │  Liquidity   │
-                     │              │
-                     │  Seed DLMM   │
-                     │    pools     │
-                     └──────────────┘
+                            │                     │
+                            ▼                     ▼
+                     ┌──────────────┐     ┌──────────────┐
+                     │    Fees      │     │   Trading    │
+                     │              │     │              │
+                     │  Creator +   │     │  Zentra X    │
+                     │  Treasury    │     │    (DEX)     │
+                     └──────────────┘     └──────────────┘
 ```
 
 ## Token Lifecycle
 
 ### Phase 1: Creation
 
-Project configures token and launch:
+Project launches token via `LaunchpadBonding`:
 
 ```
 Input:
-├── Token metadata (name, symbol, supply)
-├── Launch parameters (curve, caps, duration)
-├── Allocation breakdown
-└── Liquidity configuration
+├── Token metadata (name, symbol, decimals)
+├── Social links (description, image, twitter, telegram, website)
+├── Launch fee (0.01 PROS)
+└── WPROS for initial purchase (optional)
 
 Output:
-├── Token contract deployed
-├── Launch contract deployed
-└── Launch scheduled/started
+├── LaunchpadToken deployed (1B supply)
+├── LaunchpadPair created (virtual AMM)
+└── Trading immediately available
 ```
 
-### Phase 2: Distribution
+### Phase 2: Bonding Curve Trading
 
-Users participate through the bonding curve:
+Users trade via the virtual AMM pool:
 
 ```
 User Journey:
-├── Discover launch on Zentra App
-├── Review parameters and project
-├── Contribute quote tokens (USDC)
-├── Price adjusts based on total demand
-├── Tokens allocated proportionally
-└── Wait for launch completion
+├── Discover token on Zentra App
+├── Review token details and current price
+├── Buy with native PROS (auto-wrapped to WPROS)
+├── Price adjusts based on reserve changes
+├── Hold tokens (non-transferable until graduation)
+└── Sell back to pool if desired
 ```
 
-**During Distribution:**
-- Price moves along configured curve
-- Each purchase pushes price higher
-- Transparency: all see same price
-- No trading until completion
+**During Trading:**
+- Price follows constant product formula (x × y = k)
+- Anti-sniper tax applies in first 30 seconds
+- 1% buy fee, 2% sell fee
+- Fees split: 20% creator, 80% treasury
 
-### Phase 3: Transition
+### Phase 3: Graduation
 
-Launch completes and liquidity deploys:
+When token reserve drops below 20%:
 
 ```
-Transition Sequence (Atomic):
-1. Launch state finalizes
-2. Collected funds split:
-   ├── Liquidity portion → DLMM pool
-   └── Project portion → Creator wallet
-3. Token/quote pair forms
-4. Bins populated around terminal price
-5. Pool activates
+Graduation Sequence (Atomic):
+1. Liquidity removed from LaunchpadPair
+2. Token unlocked (graduated = true)
+3. sZTR allocation distributed:
+   └── 10% of raised WPROS to stakers
+4. LiquidityBook pool created:
+   ├── Token/WPROS pair
+   └── Concentrated liquidity around graduation price
+5. Trading transitions to Zentra X
 ```
 
-**Critical:** This happens in a single transaction block. No window for manipulation.
+**Critical:** All steps execute atomically. No manipulation window.
 
-### Phase 4: Trading
+### Phase 4: Open Trading
 
-Open market on Zentra X:
+Full market on Zentra X (LiquidityBook):
 
 ```
 Market State:
-├── Active DLMM pool
-├── Initial liquidity from launch
-├── Price determined by supply/demand
-├── LPs can add/remove liquidity
-└── Fees accrue to LPs
+├── Active LiquidityBook pool
+├── Concentrated liquidity from graduation
+├── Price determined by bin mechanics
+├── LPs can add/remove positions
+├── Dynamic fees based on volatility
+└── Full ERC-20 transferability
 ```
 
 ## Liquidity Mechanics
 
-### Initial Seeding
+### Pre-Graduation (Bonding Curve)
 
-When launch completes:
+Virtual liquidity AMM:
 
-**Inputs:**
-- Liquidity allocation % (e.g., 80%)
-- Terminal launch price
-- Bin step configuration
-- Distribution shape
+| Component | Value | Description |
+|-----------|-------|-------------|
+| Token Reserve | 1B → 200M | Decreases as users buy |
+| Virtual Quote | 200 WPROS | Calculated from K and assetRate |
+| Real Quote | 0 → 800 WPROS | Increases as users buy |
+| Total Quote | 200 → 1000 WPROS | Virtual + Real |
 
-**Process:**
-1. Calculate token/quote amounts for liquidity
-2. Determine active bin from terminal price
-3. Allocate across bins per shape
-4. Deploy to Zentra X factory
-5. Activate pool
+**Price calculation:**
+$$
+\text{Price} = \frac{\text{Quote Reserve}}{\text{Token Reserve}}
+$$
 
-**Example:**
+### Graduation Transition
+
+When token reserve hits 20%:
+
+| Asset | Amount | Destination |
+|-------|--------|-------------|
+| Tokens | ~200M remaining | LiquidityBook pool |
+| WPROS | 10% of raised | sZTR distributor |
+| WPROS | 90% of raised | LiquidityBook pool |
+
+**Example (default config):**
+- Raised: 800 WPROS
+- sZTR holders: 80 WPROS
+- LB liquidity: 720 WPROS + 200M tokens
+
+### Post-Graduation (LiquidityBook)
+
+Concentrated liquidity in bins:
+
 ```
-Launch raises: $500,000
-Liquidity allocation: 80%
-Terminal price: $0.05
-
-Liquidity deployment:
-├── Quote side: $400,000 USDC
-├── Token side: 8,000,000 tokens
-├── Active bin: ID 8,388,608 ($0.05)
-├── Bins seeded: ±10 around active
-└── Shape: Concentrated
+Bins:    -3   -2   -1    0   +1   +2   +3
+         ▓▓   ▓▓▓  ▓▓▓▓████▓▓▓▓  ▓▓▓   ▓▓
+                       ↑
+                  Active Bin
 ```
 
-### Bin Distribution
-
-Initial liquidity uses concentrated distribution:
-
-```
-Bins:    -5   -4   -3   -2   -1    0   +1   +2   +3   +4   +5
-         ▓    ▓▓   ▓▓▓  ▓▓▓▓ ▓▓▓▓▓████▓▓▓▓▓ ▓▓▓▓ ▓▓▓  ▓▓   ▓
-                              ↑
-                         Active Bin
-```
-
-Heavy allocation at active bin provides depth where trading begins. Tapering provides support as price moves.
-
-### Liquidity Evolution
-
-Post-launch, liquidity is dynamic:
-
-**Week 1:**
-- Launch liquidity dominates
-- Limited external LP participation
-- Price discovery phase
-
-**Month 1:**
-- Successful tokens attract external LPs
-- Liquidity depth increases
-- Spreads potentially tighten
-
-**Ongoing:**
-- Market forces determine depth
-- Incentive programs (farming) may boost liquidity
-- veZTR voting directs additional rewards
+Each bin provides zero-slippage trades at its price until depleted.
 
 ## Trading Flow
 
-### Swap Execution
+### Pre-Graduation: Buy Tokens
 
-User swaps on Zentra X:
+```solidity
+// User buys with native PROS
+uint256 tokens = bonding.buyWithNative{value: amount}(
+    token,      // Token address
+    minTokens,  // Slippage protection
+    deadline    // Transaction deadline
+);
+```
+
+**Flow:**
+1. PROS auto-wrapped to WPROS
+2. Anti-sniper tax applied (if within 30s)
+3. Buy fee (1%) deducted
+4. Remaining WPROS swapped for tokens via AMM
+5. Tokens credited to user (held in contract)
+
+### Pre-Graduation: Sell Tokens
+
+```solidity
+// Approve bonding contract first
+IERC20(token).approve(address(bonding), amount);
+
+// Sell for native PROS
+uint256 pros = bonding.sellForNative(
+    token,      // Token address
+    amount,     // Tokens to sell
+    minPros,    // Minimum PROS to receive
+    deadline    // Transaction deadline
+);
+```
+
+**Flow:**
+1. Tokens transferred from user
+2. AMM calculates WPROS output
+3. Sell fee (2%) deducted
+4. WPROS unwrapped to PROS
+5. PROS sent to user
+
+### Post-Graduation: Swap on Zentra X
+
+Standard LiquidityBook trading via LBRouter:
 
 ```
-1. User: Swap 1000 USDC for TOKEN
-2. Router: Find optimal path through bins
+1. User: Swap WPROS for TOKEN
+2. Router: Find path through bins
 3. Execution:
-   ├── Bin 0 (active): Provides X tokens at $0.050
-   ├── If needed, Bin 1: Provides Y tokens at $0.051
-   └── Continue until order filled
+   ├── Bin 0: Provides X tokens at price P₀
+   ├── Bin 1: Provides Y tokens at price P₁
+   └── Continue until filled
 4. Settlement:
    ├── User receives tokens
-   ├── Pool receives USDC
-   └── Fees distributed to LPs
+   ├── Pool receives WPROS
+   └── Fees to LPs
 ```
-
-### Price Impact
-
-Trade size determines price impact:
-
-| Trade Size | Bins Crossed | Effective Slippage |
-|------------|--------------|-------------------|
-| Small | 0 | 0% (within active bin) |
-| Medium | 1-3 | Minimal |
-| Large | Many | Increases with size |
-
-### Fee Capture
-
-Fees flow to:
-1. **LPs**: Majority of trading fees
-2. **Protocol**: Small protocol fee (if configured)
-3. **sZTR stakers**: Share of protocol fees
 
 ## Value Flows
 
-### From Launch
+### From Launch Fee
 
 ```
-Launch Raise ($500,000)
+Launch Fee (0.01 PROS)
         │
-        ├──► Liquidity (80%): $400,000
+        └──► Treasury: Protocol development
+```
+
+### From Trading (Pre-Graduation)
+
+```
+Trading Fees
+        │
+        ├── Buy Fee (1% of WPROS spent)
+        │       │
+        │       ├──► Creator: 20% (0.2%)
+        │       └──► Treasury: 80% (0.8%)
+        │
+        └── Sell Fee (2% of WPROS received)
+                │
+                ├──► Creator: 20% (0.4%)
+                └──► Treasury: 80% (1.6%)
+```
+
+### From Anti-Sniper Tax
+
+```
+Anti-Sniper Tax (up to 94%)
+        │
+        └──► Treasury: 100%
+             (Captures bot/MEV value)
+```
+
+### From Graduation
+
+```
+Graduation Proceeds (~800 WPROS)
+        │
+        ├──► sZTR Stakers: 10% (80 WPROS)
         │         │
-        │         ├──► DLMM Pool (paired with tokens)
-        │         └──► Earns trading fees
+        │         └──► Distributed via sZTR Distributor
         │
-        └──► Project (20%): $100,000
+        └──► LiquidityBook: 90% (720 WPROS)
                   │
-                  └──► Project treasury/operations
+                  └──► Paired with tokens for trading
 ```
 
-### From Trading
+### From Post-Graduation Trading
 
 ```
-Trading Fee (0.3%)
+LiquidityBook Fees (dynamic)
         │
-        ├──► LPs (85%): Fee income
+        ├──► LPs: Majority (earn from bins)
         │
-        └──► Protocol (15%):
+        └──► Protocol: Fee share (if configured)
                   │
                   ├──► sZTR stakers: Revenue share
-                  └──► Treasury: Protocol development
+                  └──► Treasury: Development
 ```
 
 ### From Governance
@@ -231,7 +269,7 @@ veZTR Votes
         │
         ├──► Direct ZTR emissions to pools
         │
-        └──► Voting rewards from projects
+        └──► Receive voting rewards from projects
 ```
 
 ## Participant Journeys
@@ -241,75 +279,104 @@ veZTR Votes
 ```
 Goal: Buy newly launched token
 
-1. Find token on Zentra X (post-launch)
+Pre-Graduation:
+1. Find token on Zentra App
 2. Connect wallet
-3. Enter swap: USDC → TOKEN
-4. Review price and slippage
-5. Execute swap
-6. Receive tokens
+3. Enter PROS amount
+4. Review price and tokens to receive
+5. Confirm (wait 30s if avoiding anti-sniper)
+6. Receive tokens (held until graduation)
 
-Considerations:
-- Check liquidity depth before trading
-- Large orders may require splitting
-- Dynamic fees during volatile periods
+Post-Graduation:
+1. Navigate to Zentra X
+2. Find graduated token
+3. Swap WPROS ↔ TOKEN
+4. Full ERC-20 control
 ```
 
-### LP Journey
+### LP Journey (Post-Graduation)
 
 ```
 Goal: Earn fees by providing liquidity
 
 1. Navigate to Pools on Zentra X
-2. Find desired pair
-3. Choose liquidity shape
+2. Find graduated token pair
+3. Choose liquidity shape:
+   ├── Spot: Wide range, lower risk
+   ├── Curve: Concentrated, higher fees
+   └── Bid-Ask: Market making strategy
 4. Set bin range
 5. Deposit tokens
-6. Monitor and rebalance as needed
-7. Claim fees periodically
-
-Considerations:
-- Active bin earns fees
-- Impermanent loss risk
-- More concentration = more risk/reward
+6. Monitor active bin status
+7. Rebalance as price moves
+8. Claim fees
 ```
 
 ### Project Journey
 
 ```
-Goal: Launch token with immediate liquidity
+Goal: Launch token with automatic market
 
-1. Configure token on Zentra App
-2. Set launch parameters
-3. Deploy launch
-4. Promote and build community
-5. Monitor participation
-6. Launch completes → trading activates
-7. Support ongoing market health
-
-Post-launch responsibilities:
-- Engage LPs
-- Build token utility
-- Consider governance participation
+1. Configure token on Zentra App:
+   ├── Name, symbol, decimals
+   ├── Description and image
+   └── Social links
+2. Pay launch fee (0.01 PROS)
+3. Token + pool deploy instantly
+4. Promote to community
+5. Monitor trading activity
+6. Receive creator fees (20% of trades)
+7. Graduation triggers automatically
+8. Trading continues on Zentra X
 ```
 
 ## Integration Points
 
 ### For Developers
 
-Key integration points:
+| Contract | Purpose | Key Functions |
+|----------|---------|---------------|
+| `LaunchpadBonding` | Launch & trade | `launch()`, `buyWithNative()`, `sellForNative()` |
+| `LaunchpadFactory` | Token creation | `createToken()` |
+| `LaunchpadRouter` | Swap routing | `swapExactTokensForTokens()` |
+| `LaunchpadPair` | AMM pool | `getReserves()`, `swap()` |
+| `LaunchpadToken` | ERC-20 token | Standard ERC-20 + `graduated()` |
 
-| Contract | Purpose | Use Case |
-|----------|---------|----------|
-| LBLaunchpad | Launch creation/participation | Build custom launch interfaces |
-| LBFactory | Pool creation | Create new trading pairs |
-| LBRouter | Swap execution | Integrate swaps into dApps |
-| LBPair | Direct pool interaction | Advanced LP management |
+### Querying Token State
 
-### For Aggregators
+```solidity
+// Get current price and reserves
+(uint256 tokenReserve, uint256 quoteReserve) = pair.getReserves();
+uint256 price = quoteReserve * 1e18 / tokenReserve;
 
-Zentra X pools can be:
-- Indexed by aggregators
-- Included in routing
-- Queried for pricing
+// Check graduation eligibility
+(bool eligible, uint256 remaining, uint256 threshold) =
+    bonding.isEligibleForGraduation(token);
 
-Standard Liquidity Book interfaces ensure compatibility with ecosystem tooling.
+// Check if graduated
+bool graduated = LaunchpadToken(token).graduated();
+```
+
+### Events to Monitor
+
+| Event | Contract | Description |
+|-------|----------|-------------|
+| `TokenLaunched` | LaunchpadBonding | New token created |
+| `TokenBought` | LaunchpadBonding | Buy executed |
+| `TokenSold` | LaunchpadBonding | Sell executed |
+| `FeesDistributed` | LaunchpadRouter | Fee split recorded |
+| `TokenGraduated` | LaunchpadBonding | Migration to LB |
+
+## Summary
+
+ZentraFi's flow creates value at every stage:
+
+| Stage | Value Created | Beneficiaries |
+|-------|---------------|---------------|
+| Launch | Fair distribution | Participants, creators |
+| Trading | Price discovery | Traders, creators |
+| Fees | Protocol revenue | Creators, treasury, sZTR |
+| Graduation | Liquid markets | Everyone |
+| Post-graduation | Deep liquidity | LPs, traders |
+
+The unified system eliminates fragmentation between launch and trading, creating seamless token lifecycle management.

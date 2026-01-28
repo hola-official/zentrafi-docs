@@ -16,63 +16,87 @@ ZentraFi consists of four core components, each serving a distinct function in t
 
 ## Launchpad
 
-The launchpad enables projects to distribute tokens through adaptive pricing mechanisms that respond to real-time demand.
+The launchpad enables projects to launch ERC-20 tokens with bonding curve mechanics, graduating to TraderJoe's LiquidityBook concentrated liquidity.
 
-### Design Goals
+### Contract Architecture
 
-1. **Fair Distribution**: Prevent bots and insiders from capturing disproportionate allocations
-2. **Price Discovery**: Find market-clearing prices organically
-3. **Liquidity Integration**: Seed trading markets automatically
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        LaunchpadBonding                         │
+│  (Main entry point - launches tokens, manages graduation)       │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│ LaunchpadFactory│ │  LaunchpadRouter │ │  LaunchpadPair  │
+│ (Creates tokens)│ │ (Handles swaps) │ │   (AMM pool)    │
+└────────┬────────┘ └─────────────────┘ └─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│ LaunchpadToken  │
+│  (ERC-20 token) │
+└─────────────────┘
+```
 
-### Adaptive Pricing Model
+### Core Contracts
 
-Unlike fixed-price sales where early participants get guaranteed allocations, ZentraFi's launchpad uses continuous pricing:
+| Contract | Type | Purpose |
+|----------|------|---------|
+| `LaunchpadBonding` | UUPS Upgradeable | Main entry point, graduation logic |
+| `LaunchpadFactory` | UUPS Upgradeable | Token deployment with metadata |
+| `LaunchpadRouter` | UUPS Upgradeable | Swap execution, fee handling |
+| `LaunchpadPair` | Standard | V2-style AMM with virtual liquidity |
+| `LaunchpadToken` | Standard | ERC-20 with transfer restrictions |
+| `LaunchpadMath` | Library | AMM and fee calculations |
+
+### Virtual Liquidity AMM
+
+The launchpad uses a Uniswap V2-style constant product formula with virtual liquidity:
 
 $$
-P(t) = P_0 \cdot f(D(t))
+x \times y = k
 $$
 
-Where:
-- $P(t)$ = Price at time $t$
-- $P_0$ = Initial price
-- $D(t)$ = Cumulative demand at time $t$
-- $f$ = Pricing function (configurable)
+Virtual quote reserves are calculated from two parameters:
 
-### Pricing Functions
-
-**Linear:**
 $$
-f(D) = 1 + k \cdot D
+\text{Virtual Quote} = \frac{K \times \text{PRECISION}}{\text{assetRate} \times 10^9}
 $$
 
-**Exponential:**
-$$
-f(D) = e^{k \cdot D}
-$$
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `K` | 100,000,000,000 | Base curve constant |
+| `assetRate` | 5,000,000,000 | Adjustable for quote price changes |
 
-**Sigmoid:**
-$$
-f(D) = \frac{L}{1 + e^{-k(D - D_0)}}
-$$
+### Anti-Sniper Protection
 
-Projects choose the function that matches their distribution goals.
+Time-based decaying tax on early trades:
 
-### Launch Types
+| Time | Tax Rate |
+|------|----------|
+| 0s | 94% |
+| 15s | 47% |
+| 30s | 0% |
 
-| Type | Mechanism | Best For |
-|------|-----------|----------|
-| Fair Launch | Equal opportunity, adaptive price | Community tokens |
-| Bonding Curve | Price increases with supply | Price discovery |
-| Dutch Auction | Price decreases over time | High-demand launches |
+### Fee Structure
 
-### Post-Launch Flow
+| Fee | Rate | Split |
+|-----|------|-------|
+| Buy | 1% | 20% creator / 80% treasury |
+| Sell | 2% | 20% creator / 80% treasury |
+| Launch | 0.01 PROS | 100% treasury |
 
-When a launch completes:
+### Graduation Flow
 
-1. Token distribution finalizes
-2. Liquidity allocation triggers
-3. DLMM pool receives seeded liquidity
-4. Trading activates on Zentra X
+When token reserve drops below 20%:
+
+1. Liquidity removed from `LaunchpadPair`
+2. Token becomes fully transferable
+3. sZTR holders receive 10% of raised WPROS
+4. Remaining liquidity migrates to LiquidityBook
+5. Trading continues on Zentra X
 
 ## Liquidity Book
 
