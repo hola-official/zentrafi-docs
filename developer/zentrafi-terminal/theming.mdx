@@ -1,0 +1,140 @@
+---
+title: "Theming"
+description: "Customise ZentraFi Terminal colors to match your brand."
+---
+
+ZentraFi Terminal uses a CSS custom property system. Every colour in the UI is derived from a small set of theme tokens — which means changing a few values re-skins the entire terminal instantly.
+
+## How it works
+
+When you pass a `theme` object, the terminal generates scoped CSS variables and injects them via a `<style>` tag:
+
+```css
+:where([data-zt-theme]) {
+  --zt-bg: #0a0f1a;
+  --zt-primary: #97CBDC;
+  --zt-text: #ffffff;
+  /* ... 25+ derived variables */
+}
+```
+
+The `:where()` selector has zero specificity, so your own CSS always wins if you need to override further.
+
+---
+
+## Theme tokens
+
+| Token | Type | Purpose |
+|-------|------|---------|
+| `bg_primary` | hex / rgba | Panel and card background |
+| `primary` | hex | Accent colour — buttons, active states, highlights |
+| `text_primary` | hex | Main body text |
+| `text_secondary` | hex | Muted text, labels, placeholders |
+| `success` | hex | Positive states, connected wallet dot |
+| `warning` | hex | High slippage warnings |
+| `error` | hex | Errors, high price impact |
+| `btn_text` | hex | Text colour on primary-coloured buttons |
+| `bg_overlay` | hex / rgba | Modal backdrop |
+| `border` | hex / rgba | All border colours |
+
+---
+
+## Presets
+
+### Dark (default)
+
+```ts
+{
+  bg_primary:    "#0a0f1a",
+  primary:       "#97CBDC",
+  text_primary:  "#ffffff",
+  text_secondary:"#6b7280",
+  success:       "#4ade80",
+  warning:       "#fbbf24",
+  error:         "#f87171",
+  btn_text:      "#0a0f1a",
+  bg_overlay:    "rgba(10,15,26,0.85)",
+  border:        "#475B74",
+}
+```
+
+### Light
+
+```ts
+{
+  bg_primary:    "#ffffff",
+  primary:       "#0ea5c9",
+  text_primary:  "#111827",
+  text_secondary:"#6b7280",
+  success:       "#16a34a",
+  warning:       "#d97706",
+  error:         "#dc2626",
+  btn_text:      "#ffffff",
+  bg_overlay:    "rgba(0,0,0,0.4)",
+  border:        "rgba(0,0,0,0.1)",
+}
+```
+
+---
+
+## Examples
+
+### Match your brand colour
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    themeType: "Dark",
+    theme: {
+      primary: "#a855f7",   // purple accent
+      btn_text: "#ffffff",  // white text on purple buttons
+    },
+  }}
+/>
+```
+
+### Fully white terminal
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    themeType: "Light",
+    theme: {
+      bg_primary: "#f8fafc",
+      primary: "#6366f1",
+      border: "rgba(99,102,241,0.2)",
+    },
+  }}
+/>
+```
+
+### Green DeFi theme
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    themeType: "Dark",
+    theme: {
+      bg_primary: "#0a1a0f",
+      primary: "#4ade80",
+      btn_text: "#0a1a0f",
+      border: "#1a3a1f",
+    },
+  }}
+/>
+```
+
+---
+
+## Tips
+
+- **`primary` is the most impactful token** — it controls buttons, active tabs, timer ring, token badges, and focus rings. Start here.
+- **`btn_text` must contrast with `primary`** — if you pick a light `primary`, set `btn_text: "#000000"`. If you pick a dark `primary`, set `btn_text: "#ffffff"`.
+- **`bg_overlay` controls modal backdrop opacity** — for a darker backdrop use `rgba(0,0,0,0.7)`, for a lighter veil use `rgba(0,0,0,0.3)`.
+- **All theme tokens accept any valid CSS colour value** — hex, rgb(), rgba(), hsl() all work.
+
+---
+
+## Using the demo configurator
+
+The interactive theme builder at [terminal.zentrafi.xyz](https://terminal.zentrafi.xyz) lets you pick colours with a colour picker and preview changes in real time. It also generates the complete `initProps` code snippet you can copy directly into your project.

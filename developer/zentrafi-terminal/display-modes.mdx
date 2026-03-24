@@ -1,0 +1,128 @@
+---
+title: "Display Modes"
+description: "Three ways to embed ZentraFi Terminal — Integrated, Modal, and Widget."
+---
+
+ZentraFi Terminal supports three display modes. You switch between them with the `displayMode` prop. All three modes render the same swap interface and share the same configuration options.
+
+## Integrated
+
+The terminal renders **inline** inside your page layout, like any other component.
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    displayMode: "Integrated",
+    themeType: "Dark",
+  }}
+/>
+```
+
+**Best for:**
+- Dedicated swap pages
+- Dashboards where the swap is a primary feature
+- Maximum screen real-estate
+
+The panel width is controlled by `widgetSize`:
+
+| `widgetSize` | Panel width |
+|---|---|
+| `"default"` (default) | 400px |
+| `"small"` | 340px |
+
+---
+
+## Modal
+
+A **full-screen overlay** triggered by clicking a circular logo button. The modal appears centred over your page content with a backdrop.
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    displayMode: "Modal",
+    themeType: "Dark",
+  }}
+/>
+```
+
+**Best for:**
+- Adding swap to a page where it's a secondary action
+- Keeping the main page layout clean
+- Wallets, portfolio pages, token detail pages
+
+The trigger button is always visible where you place the component in your JSX. The modal panel slides up with an animation on open.
+
+<Info>
+The swap widget is **never unmounted** when the modal closes — your user's wallet connection and entered amounts are preserved between open/close cycles.
+</Info>
+
+---
+
+## Widget
+
+A **floating action button (FAB)** fixed to a corner of the screen. Clicking it toggles a swap panel that slides in above the button.
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    displayMode: "Widget",
+    widgetPosition: "bottom-right",
+    themeType: "Dark",
+  }}
+/>
+```
+
+**Best for:**
+- Adding swap everywhere without redesigning your layout
+- Token project websites and NFT marketplaces
+- Any page where swap is a convenience feature
+
+### Widget position
+
+| `widgetPosition` | Corner |
+|---|---|
+| `"bottom-right"` (default) | Bottom-right |
+| `"bottom-left"` | Bottom-left |
+| `"top-right"` | Top-right |
+| `"top-left"` | Top-left |
+
+### Widget placement
+
+The Widget mode uses `position: fixed` and renders relative to the **viewport**, not your component's parent. Place `<ZentraTerminal>` at the root of your page (not inside a container with CSS `transform`, `filter`, or `perspective`) to avoid stacking context issues.
+
+```tsx
+// ✅ Correct — at page root level
+export default function App() {
+  return (
+    <>
+      <YourApp />
+      <ZentraTerminal initProps={{ displayMode: "Widget" }} />
+    </>
+  )
+}
+
+// ❌ Wrong — inside a transformed container
+export default function App() {
+  return (
+    <div style={{ transform: "translateZ(0)" }}>
+      <ZentraTerminal initProps={{ displayMode: "Widget" }} />
+    </div>
+  )
+}
+```
+
+<Warning>
+CSS properties `transform`, `filter`, `perspective`, and `will-change` create a new stacking context. Any `position: fixed` children (including the Widget panel) will be fixed relative to that element, not the viewport. Always render the Widget at the document root.
+</Warning>
+
+---
+
+## Switching modes at runtime
+
+All three modes are stateless from the outside — you can switch `displayMode` by passing a new prop and the terminal re-renders without remounting:
+
+```tsx
+const [mode, setMode] = useState<DisplayMode>("Integrated")
+
+<ZentraTerminal initProps={{ displayMode: mode }} />
+```

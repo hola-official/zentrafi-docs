@@ -21,6 +21,15 @@
           "href": "https://x.zentrafi.xyz"
         },
         {
+          "anchor": "Terminal Demo",
+          "icon": "terminal",
+          "color": {
+            "light": "#0179a3",
+            "dark": "#97CBDC"
+          },
+          "href": "https://terminal.zentrafi.xyz"
+        },
+        {
           "anchor": "Community",
           "icon": "users",
           "color": {
@@ -32,6 +41,23 @@
       ]
     },
     "tabs": [
+      {
+        "tab": "Developer",
+        "pages": [
+          {
+            "group": "ZentraFi Terminal",
+            "pages": [
+              "developer/zentrafi-terminal/overview",
+              "developer/zentrafi-terminal/quick-start",
+              "developer/zentrafi-terminal/display-modes",
+              "developer/zentrafi-terminal/configuration",
+              "developer/zentrafi-terminal/theming",
+              "developer/zentrafi-terminal/html-cdn",
+              "developer/zentrafi-terminal/changelog"
+            ]
+          }
+        ]
+      },
       {
         "tab": "Docs",
         "pages": [

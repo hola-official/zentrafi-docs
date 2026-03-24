@@ -1,0 +1,242 @@
+---
+title: "Configuration"
+description: "All initProps options for ZentraTerminal, with types and defaults."
+---
+
+All configuration is passed through the `initProps` object:
+
+```tsx
+<ZentraTerminal initProps={{ ...options }} />
+```
+
+For the HTML/CDN version, the same options are passed to `window.ZentraX.init({ containerId: "...", ...options })`.
+
+---
+
+## Full reference
+
+### `displayMode`
+
+```ts
+displayMode?: "Integrated" | "Modal" | "Widget"
+// default: "Integrated"
+```
+
+How the terminal is rendered. See [Display Modes](/developer/zentrafi-terminal/display-modes) for details.
+
+---
+
+### `themeType`
+
+```ts
+themeType?: "Dark" | "Light"
+// default: "Dark"
+```
+
+The base colour preset. Individual colours can be overridden with the `theme` prop.
+
+---
+
+### `theme`
+
+```ts
+theme?: {
+  bg_primary?: string       // Panel / card background
+  primary?: string          // Accent / brand colour (buttons, highlights)
+  text_primary?: string     // Main text
+  text_secondary?: string   // Muted / secondary text
+  success?: string          // Success states
+  warning?: string          // Warning states
+  error?: string            // Error states
+  btn_text?: string         // Text colour on primary-coloured buttons
+  bg_overlay?: string       // Modal backdrop colour
+  border?: string           // Border colour
+}
+```
+
+Overrides applied on top of the `themeType` preset. Any omitted key falls back to the preset value. See [Theming](/developer/zentrafi-terminal/theming) for a full guide.
+
+---
+
+### `independentWallet`
+
+```ts
+independentWallet?: boolean
+// default: true
+```
+
+When `true`, the terminal manages its own wagmi + RainbowKit wallet connection internally. Users connect their wallet inside the terminal UI.
+
+When `false`, the terminal uses the wallet context from its parent React tree. You must wrap it in `WagmiProvider`, `QueryClientProvider`, and `RainbowKitProvider` yourself.
+
+---
+
+### `walletConnectProjectId`
+
+```ts
+walletConnectProjectId?: string
+// default: ""
+```
+
+Your [WalletConnect Cloud](https://cloud.walletconnect.com) Project ID. Required for mobile wallet connections. Without a valid ID, WalletConnect-based wallets (MetaMask Mobile, Rainbow, etc.) will not be able to connect.
+
+---
+
+### `appName`
+
+```ts
+appName?: string
+// default: "ZentraFi Terminal"
+```
+
+The application name shown in wallet connection dialogs (e.g. "Connect to MyApp").
+
+---
+
+### `defaultPair`
+
+```ts
+defaultPair?: {
+  from: string   // Token symbol (e.g. "PHRS") or address (e.g. "NATIVE" / "0x...")
+  to: string
+}
+```
+
+The token pair pre-selected when the terminal loads. Accepts both token symbols and addresses.
+
+```tsx
+// By symbol
+defaultPair={{ from: "PHRS", to: "USDC" }}
+
+// By address
+defaultPair={{ from: "NATIVE", to: "0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8" }}
+```
+
+---
+
+### `initialSlippage`
+
+```ts
+initialSlippage?: number
+// default: 0.5  (meaning 0.5%)
+```
+
+Initial slippage tolerance in percent. The user can change this in the settings panel.
+
+| Value | Meaning |
+|-------|---------|
+| `0.1` | 0.1% |
+| `0.5` | 0.5% (recommended) |
+| `1.0` | 1.0% |
+
+---
+
+### `widgetPosition`
+
+```ts
+widgetPosition?: "bottom-right" | "bottom-left" | "top-right" | "top-left"
+// default: "bottom-right"
+```
+
+Corner position of the floating button in Widget mode. Has no effect in Integrated or Modal mode.
+
+---
+
+### `widgetSize`
+
+```ts
+widgetSize?: "default" | "small"
+// default: "default"
+```
+
+Width of the swap panel.
+
+| Value | Width |
+|-------|-------|
+| `"default"` | 400px |
+| `"small"` | 340px |
+
+---
+
+### `showBranding`
+
+```ts
+showBranding?: boolean
+// default: true
+```
+
+Whether to show the "Powered by ZentraFi" footer inside the terminal panel.
+
+---
+
+### `logoUrl`
+
+```ts
+logoUrl?: string
+```
+
+URL of a custom logo image to replace the default ZentraFi mascot. Used as the Widget FAB icon and the Modal trigger button image.
+
+```tsx
+logoUrl="https://yourapp.com/logo.png"
+```
+
+---
+
+### `onSwapSuccess`
+
+```ts
+onSwapSuccess?: (txHash: string) => void
+```
+
+Callback fired after a swap, wrap, or unwrap is confirmed on-chain. Receives the transaction hash.
+
+```tsx
+onSwapSuccess={(txHash) => {
+  console.log("Swap confirmed:", txHash)
+  analytics.track("swap_completed", { txHash })
+}}
+```
+
+---
+
+### `onError`
+
+```ts
+onError?: (error: Error) => void
+```
+
+Callback fired when a swap or approval fails (user rejects, transaction reverts, or network error). The terminal already shows an error toast — use this for your own logging or analytics.
+
+---
+
+## Full example
+
+```tsx
+import { ZentraTerminal } from "@zentrafi/terminal"
+import "@zentrafi/terminal/dist/styles.css"
+
+export default function SwapPage() {
+  return (
+    <ZentraTerminal
+      initProps={{
+        displayMode: "Integrated",
+        themeType: "Dark",
+        theme: {
+          primary: "#97CBDC",
+          bg_primary: "#0a0f1a",
+        },
+        independentWallet: true,
+        walletConnectProjectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
+        appName: "My dApp",
+        defaultPair: { from: "PHRS", to: "USDC" },
+        initialSlippage: 0.5,
+        widgetPosition: "bottom-right",
+        showBranding: true,
+        onSwapSuccess: (txHash) => console.log("✅ Swap:", txHash),
+        onError: (err) => console.error("❌ Swap error:", err),
+      }}
+    />
+  )
+}
+```

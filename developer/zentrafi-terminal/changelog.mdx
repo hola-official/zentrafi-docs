@@ -1,0 +1,56 @@
+---
+title: "Changelog"
+description: "Version history for @zentrafi/terminal."
+---
+
+## v0.1.0 — Initial release
+
+**Released:** March 2026
+
+### Features
+
+- Three display modes: `Integrated`, `Modal`, `Widget`
+- Full theme system with 10 configurable tokens and 25+ derived CSS variables
+- Independent wallet mode (built-in wagmi v2 + RainbowKit v2) or external wallet passthrough
+- Token list with search, favourites (⭐), and custom token import by contract address
+- Slippage tolerance settings (presets: 0.1%, 0.5%, 1.0% + custom)
+- Auto-refreshing quotes every 10 seconds with a circular countdown timer
+- Price impact warnings (≥5% impact shows red button + alert banner)
+- Wrap / unwrap support for PHRS ↔ WPHRS
+- ERC-20 approval flow with `maxUint256` single-approval (no per-swap approvals)
+- `onSwapSuccess` and `onError` callbacks
+- CDN / IIFE build (`window.ZentraX`) with auto-init via `data-zentra-terminal` attribute
+- PWA-ready demo at [terminal.zentrafi.xyz](https://terminal.zentrafi.xyz)
+
+### Tokens supported (Pharos testnet)
+
+| Symbol | Address |
+|--------|---------|
+| PHRS (native) | `NATIVE` |
+| WPHRS | `0x838800b758277CC111B2d48Ab01e5E164f8E9471` |
+| USDC | `0xE0BE08c77f415F577A1B3A9aD7a1Df1479564ec8` |
+| USDT | `0xE7E84B8B4f39C507499c40B4ac199B050e2882d5` |
+| WETH | `0x7d211f77525ea39a0592794f793cc1036eeaccd5` |
+
+### Package info
+
+```
+@zentrafi/terminal@0.1.0
+├── dist/index.mjs        ESM (254 kB)
+├── dist/index.js         CJS (159 kB)
+├── dist/styles.css       Styles (66 kB)
+├── dist/cdn/main.js      IIFE bundle (6.8 MB / 1.6 MB gzip)
+└── dist/cdn/style.css    CDN styles (66 kB)
+```
+
+### Dependencies
+
+| Package | Version |
+|---------|---------|
+| react | ≥18.0.0 |
+| wagmi | ^2.19.5 |
+| viem | ^2.0.0 |
+| @rainbow-me/rainbowkit | ^2.0.0 |
+| @tanstack/react-query | ^5.0.0 |
+| @zentrafi/sdk-core | ^1.0.0 |
+| @zentrafi/sdk-v2 | ^1.0.0 |

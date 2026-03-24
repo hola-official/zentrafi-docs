@@ -1,0 +1,71 @@
+---
+title: "ZentraFi Terminal"
+description: "A lite, embeddable swap terminal for ZentraFi on Pharos EVM. Drop a DEX swap widget into any dApp in minutes."
+---
+
+<img
+  src="/images/terminal-preview.png"
+  alt="ZentraFi Terminal Preview"
+  className="rounded-xl border border-white/10"
+/>
+
+## What is ZentraFi Terminal?
+
+ZentraFi Terminal is a **lite, embeddable version of the Zentra X Swap Aggregator** that can be dropped into any website or dApp in minutes. It gives your users access to Pharos EVM DEX liquidity without them ever leaving your application.
+
+Think of it as a plug-and-play swap interface: you configure it once, embed it, and your users can swap tokens directly inside your product.
+
+<CardGroup cols={3}>
+  <Card title="Integrated" icon="layout-panel-top">
+    Renders inline inside your page — fully embedded, no popups.
+  </Card>
+  <Card title="Modal" icon="layout-panel-left">
+    Full-screen overlay triggered by a button click. Clean, focused UX.
+  </Card>
+  <Card title="Widget" icon="circle-dot">
+    Floating corner FAB button. Stays out of the way until the user needs it.
+  </Card>
+</CardGroup>
+
+## Why use it?
+
+- **Zero liquidity work** — routes through the full Zentra X aggregator automatically
+- **Two-line embed** — NPM package or HTML script tag, both work
+- **Fully themeable** — match your brand with CSS variable overrides
+- **Wallet-aware** — works with your existing wagmi/RainbowKit setup, or manages its own wallet connection
+- **Battle-tested stack** — wagmi v2 + viem + RainbowKit v2 + @tanstack/react-query
+
+## Live demo
+
+Try the interactive configurator at [terminal.zentrafi.xyz](https://terminal.zentrafi.xyz) to preview all three modes, test theme customisation, and copy a ready-to-use code snippet.
+
+## Package
+
+```bash
+npm install @zentrafi/terminal
+```
+
+| Format | File | Use case |
+|--------|------|----------|
+| ESM | `dist/index.mjs` | React / bundler (Vite, Next.js, Webpack) |
+| CJS | `dist/index.js` | CommonJS / Node environments |
+| IIFE | `dist/cdn/main.js` | Plain HTML `<script>` tag |
+| CSS | `dist/styles.css` | NPM import |
+| CDN CSS | `dist/cdn/style.css` | HTML `<link>` tag |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/developer/zentrafi-terminal/quick-start">
+    Up and running in 2 minutes
+  </Card>
+  <Card title="Display Modes" icon="layout-template" href="/developer/zentrafi-terminal/display-modes">
+    Integrated, Modal, and Widget explained
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/developer/zentrafi-terminal/configuration">
+    All initProps options documented
+  </Card>
+  <Card title="Theming" icon="palette" href="/developer/zentrafi-terminal/theming">
+    Customise colors to match your brand
+  </Card>
+</CardGroup>
