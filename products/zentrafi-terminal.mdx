@@ -1,0 +1,91 @@
+---
+title: ZentraFi Terminal
+description: A lite, embeddable swap terminal for ZentraFi on Pharos EVM
+---
+
+A lite version of the ZentraFi Swap Aggregator that can be embedded into any website or dApp. Drop a fully functional DEX swap widget into your project in minutes — no backend required.
+
+**Live demo:** [terminal.zentrafi.xyz](https://terminal.zentrafi.xyz)
+
+---
+
+## Installation
+
+<Tabs>
+  <Tab title="NPM / Yarn">
+
+```bash
+npm install @zentrafi/terminal
+# or
+yarn add @zentrafi/terminal
+```
+
+Wrap your app with the required providers, then drop in the terminal:
+
+```tsx
+import { ZentraTerminal, TerminalProviders } from "@zentrafi/terminal"
+import "@zentrafi/terminal/styles.css"
+
+export default function App() {
+  return (
+    <TerminalProviders>
+      <ZentraTerminal mode="integrated" />
+    </TerminalProviders>
+  )
+}
+```
+
+  </Tab>
+  <Tab title="CDN (HTML)">
+
+Add this to your HTML file — no build step required:
+
+```html
+<!-- 1. Load the terminal bundle -->
+<script src="https://cdn.zentrafi.xyz/terminal/latest/terminal.iife.js"></script>
+<link  rel="stylesheet" href="https://cdn.zentrafi.xyz/terminal/latest/styles.css" />
+
+<!-- 2. Mount point -->
+<div id="zentra-terminal"></div>
+
+<!-- 3. Initialize -->
+<script>
+  window.ZentraX.init({
+    container: "#zentra-terminal",
+    mode: "integrated",        // "integrated" | "modal" | "widget"
+    defaultBuyToken: "0x...",  // optional: pre-select a token
+  })
+</script>
+```
+
+  </Tab>
+</Tabs>
+
+---
+
+## Display Modes
+
+| Mode | Description |
+|------|-------------|
+| `integrated` | Renders inline inside your container |
+| `modal` | Opens as a centered dialog overlay |
+| `widget` | Floating button in the corner of the screen |
+
+---
+
+## Configuration
+
+```ts
+ZentraX.init({
+  container: "#zentra-terminal", // CSS selector or HTMLElement
+  mode: "integrated",            // display mode (see above)
+  defaultBuyToken: "0x...",      // pre-select input token address
+  theme: {
+    primary: "#018ABD",          // accent color
+    background: "#0a0f1a",       // panel background
+    borderRadius: "16px",        // widget corner radius
+  },
+})
+```
+
+All fields except `container` are optional.
