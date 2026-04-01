@@ -1,9 +1,9 @@
 ---
 title: ZentraFi Terminal
-description: A lite, embeddable swap terminal for ZentraFi on Pharos EVM
+description: An embeddable DEX swap widget for ZentraFi on Pharos EVM — drop a fully functional swap interface into any dApp in minutes.
 ---
 
-A lite version of the ZentraFi Swap Aggregator that can be embedded into any website or dApp. Drop a fully functional DEX swap widget into your project in minutes — no backend required.
+A lite, embeddable swap terminal built on top of the ZentraFi Swap Aggregator. Supports React and vanilla HTML/JS with three display modes, full theme control, and two wallet integration strategies.
 
 **Live demo:** [terminal.zentrafi.xyz](https://terminal.zentrafi.xyz)
 
@@ -12,48 +12,81 @@ A lite version of the ZentraFi Swap Aggregator that can be embedded into any web
 ## Installation
 
 <Tabs>
-  <Tab title="NPM / Yarn">
+  <Tab title="React (NPM / Yarn)">
+
+Install the package and its peer dependencies:
 
 ```bash
 npm install @zentrafi/terminal
-# or
-yarn add @zentrafi/terminal
+# peer deps (skip any you already have)
+npm install wagmi viem @tanstack/react-query @rainbow-me/rainbowkit
 ```
 
-Wrap your app with the required providers, then drop in the terminal:
+```bash
+yarn add @zentrafi/terminal wagmi viem @tanstack/react-query @rainbow-me/rainbowkit
+```
+
+  </Tab>
+  <Tab title="CDN (HTML / Vanilla JS)">
+
+No build step required — paste into your `<head>` and `<body>`:
+
+```html
+<link  rel="stylesheet" href="https://cdn.zentrafi.xyz/terminal/style.css" />
+<script src="https://cdn.zentrafi.xyz/terminal/main.js"></script>
+```
+
+  </Tab>
+</Tabs>
+
+---
+
+## Quick Start
+
+The fastest path: the terminal manages its **own** wallet connection (`independentWallet: true`, the default).
+
+<Tabs>
+  <Tab title="React">
 
 ```tsx
-import { ZentraTerminal, TerminalProviders } from "@zentrafi/terminal"
-import "@zentrafi/terminal/styles.css"
+import { ZentraTerminal } from "@zentrafi/terminal"
+import "@zentrafi/terminal/styles"
 
-export default function App() {
+export default function Page() {
   return (
-    <TerminalProviders>
-      <ZentraTerminal mode="integrated" />
-    </TerminalProviders>
+    <ZentraTerminal
+      initProps={{
+        displayMode: "Integrated",
+        themeType: "Dark",
+        independentWallet: true,
+        walletConnectProjectId: "YOUR_REOWN_PROJECT_ID",
+        appName: "My dApp",
+      }}
+    />
   )
 }
 ```
 
+<Note>
+  Get a free Reown project ID at [cloud.reown.com](https://cloud.reown.com).
+  The terminal still works without one (falls back to injected wallets such as MetaMask),
+  but WalletConnect mobile support requires a valid ID.
+</Note>
+
   </Tab>
   <Tab title="CDN (HTML)">
 
-Add this to your HTML file — no build step required:
-
 ```html
-<!-- 1. Load the terminal bundle -->
-<script src="https://cdn.zentrafi.xyz/terminal/latest/terminal.iife.js"></script>
-<link  rel="stylesheet" href="https://cdn.zentrafi.xyz/terminal/latest/styles.css" />
-
-<!-- 2. Mount point -->
+<!-- mount point -->
 <div id="zentra-terminal"></div>
 
-<!-- 3. Initialize -->
 <script>
   window.ZentraX.init({
-    container: "#zentra-terminal",
-    mode: "integrated",        // "integrated" | "modal" | "widget"
-    defaultBuyToken: "0x...",  // optional: pre-select a token
+    containerId: "zentra-terminal",
+    displayMode: "Integrated",
+    themeType: "Dark",
+    independentWallet: true,
+    walletConnectProjectId: "YOUR_REOWN_PROJECT_ID",
   })
 </script>
 ```
@@ -65,27 +98,288 @@ Add this to your HTML file — no build step required:
 
 ## Display Modes
 
+Control how the terminal is rendered with `displayMode`.
+
 | Mode | Description |
 |------|-------------|
-| `integrated` | Renders inline inside your container |
-| `modal` | Opens as a centered dialog overlay |
-| `widget` | Floating button in the corner of the screen |
+| `"Integrated"` | Renders inline inside your container element |
+| `"Modal"` | Shows a trigger button that opens a centered dialog overlay |
+| `"Widget"` | Floating action button pinned to a corner of the viewport |
+
+```tsx
+// Integrated — renders in place
+<ZentraTerminal initProps={{ displayMode: "Integrated" }} />
+
+// Modal — shows a "Swap" pill button; clicking it opens the swap dialog
+<ZentraTerminal initProps={{ displayMode: "Modal" }} />
+
+// Widget — fixed FAB in the chosen corner, expands a swap panel on click
+<ZentraTerminal initProps={{ displayMode: "Widget", widgetPosition: "bottom-right" }} />
+```
+
+### Widget options
+
+These only apply when `displayMode: "Widget"`.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `widgetPosition` | `"bottom-right" \| "bottom-left" \| "top-right" \| "top-left"` | `"bottom-right"` | Corner the FAB is pinned to |
+| `widgetSize` | `"default" \| "small"` | `"default"` | Panel width (`400px` or `340px`) |
 
 ---
 
-## Configuration
+## Wallet Modes
 
-```ts
-ZentraX.init({
-  container: "#zentra-terminal", // CSS selector or HTMLElement
-  mode: "integrated",            // display mode (see above)
-  defaultBuyToken: "0x...",      // pre-select input token address
-  theme: {
-    primary: "#018ABD",          // accent color
-    background: "#0a0f1a",       // panel background
-    borderRadius: "16px",        // widget corner radius
-  },
+The terminal has two wallet strategies controlled by `independentWallet`.
+
+### Independent wallet (`independentWallet: true` — default)
+
+The terminal creates and manages its **own** wagmi + RainbowKit context internally. No setup needed in your app.
+
+- A wallet connect button is shown inside the swap card
+- The connection is persisted in `localStorage` and auto-restored on reload
+- Requires a Reown project ID for WalletConnect/mobile support (optional but recommended)
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    independentWallet: true,
+    walletConnectProjectId: "YOUR_REOWN_PROJECT_ID",
+    appName: "My dApp",
+  }}
+/>
+```
+
+### Hosted wallet (`independentWallet: false`)
+
+The terminal **reuses your dApp's existing wagmi context**. No internal wallet setup is created — this avoids connector conflicts and keeps wallet state in sync with the rest of your app.
+
+- No wallet button is shown inside the swap card (your app handles connection)
+- When the user connects via your app's button, the swap card activates automatically
+- Works with any wallet library (RainbowKit, ConnectKit, Web3Modal, custom, etc.)
+
+Your app must have `WagmiProvider` and `QueryClientProvider` wrapping the terminal:
+
+```tsx
+import { WagmiProvider } from "wagmi"
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
+import { ZentraTerminal } from "@zentrafi/terminal"
+import "@zentrafi/terminal/styles"
+
+const queryClient = new QueryClient()
+
+export default function App() {
+  return (
+    <WagmiProvider config={yourWagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+
+        {/* your app's own wallet connect button */}
+        <YourConnectButton />
+
+        <ZentraTerminal
+          initProps={{
+            independentWallet: false,
+            // Route swap toasts through your own notification system
+            onToast: ({ title, description, variant }) => {
+              yourToast(title, { description, type: variant })
+            },
+          }}
+        />
+
+      </QueryClientProvider>
+    </WagmiProvider>
+  )
+}
+```
+
+<Warning>
+  When `independentWallet: false`, your wagmi config **must** include the Pharos Testnet chain
+  (`chainId: 688689`, RPC `https://atlantic.dplabs-internal.com`). The terminal will not function
+  on an unsupported chain.
+</Warning>
+
+---
+
+## Configuration Reference
+
+All props are optional unless noted.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `displayMode` | `"Integrated" \| "Modal" \| "Widget"` | `"Integrated"` | How the terminal is rendered |
+| `themeType` | `"Dark" \| "Light"` | `"Dark"` | Colour scheme preset |
+| `theme` | `TerminalTheme` | — | Fine-grained colour overrides (see [Theme](#theme-customisation)) |
+| `independentWallet` | `boolean` | `true` | Whether the terminal manages its own wallet context |
+| `walletConnectProjectId` | `string` | — | Reown project ID — enables WalletConnect and mobile wallets |
+| `appName` | `string` | `"ZentraFi Terminal"` | App name shown in wallet dialogs |
+| `defaultPair` | `{ from: string; to: string }` | PHRS → USDT | Pre-selected token pair. Accepts symbol (`"PHRS"`) or address (`"0x..."` / `"NATIVE"`) |
+| `initialSlippage` | `number` | `0.5` | Default slippage tolerance in percent (e.g. `0.5` = 0.5 %) |
+| `widgetPosition` | `WidgetPosition` | `"bottom-right"` | FAB corner position (Widget mode only) |
+| `widgetSize` | `"default" \| "small"` | `"default"` | Panel width — `400px` or `340px` |
+| `showBranding` | `boolean` | `true` | Show "Powered by ZentraFi" footer |
+| `logoUrl` | `string` | — | Custom logo URL — replaces the ZentraFi icon on the FAB / Modal trigger |
+| `onSwapSuccess` | `(txHash: string) => void` | — | Called after a successful swap, wrap, or unwrap |
+| `onError` | `(error: Error) => void` | — | Called when a swap or approval fails |
+| `onToast` | `(opts) => void` | — | Route swap notifications through your own toast system |
+
+---
+
+## Theme Customisation
+
+Pass a `theme` object to override any colour token. All fields are optional — unset values fall back to the `themeType` preset.
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    themeType: "Dark",
+    theme: {
+      primary:       "#97CBDC",   // accent / brand colour (buttons, highlights)
+      bg_primary:    "#0a0f1a",   // panel / card background
+      text_primary:  "#FFFFFF",   // main text
+      text_secondary:"rgba(151,203,220,0.5)", // muted / secondary text
+      btn_text:      "#0a0f1a",   // text on primary-coloured buttons
+      border:        "#475B74",   // border colour
+      success:       "#4ade80",
+      warning:       "#fbbf24",
+      error:         "#f87171",
+      bg_overlay:    "rgba(10,15,26,0.85)", // modal backdrop (Modal mode)
+    },
+  }}
+/>
+```
+
+| Token | Description |
+|-------|-------------|
+| `primary` | Accent / brand colour — used on buttons, highlights, and the FAB |
+| `bg_primary` | Panel and card background |
+| `text_primary` | Primary text colour |
+| `text_secondary` | Muted / secondary text |
+| `btn_text` | Text colour on primary-filled buttons |
+| `border` | Border colour |
+| `success` | Positive states (success toasts, profit indicators) |
+| `warning` | Warning states |
+| `error` | Error states and high-impact trade warnings |
+| `bg_overlay` | Modal backdrop (Modal display mode only) |
+
+---
+
+## Callbacks
+
+### `onSwapSuccess`
+
+Fires after a swap, wrap, or unwrap transaction is confirmed on-chain.
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    onSwapSuccess: (txHash) => {
+      console.log("Swap confirmed:", txHash)
+      // e.g. refresh portfolio balances, show a custom notification
+    },
+  }}
+/>
+```
+
+### `onError`
+
+Fires when a transaction or approval fails (including user rejection).
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    onError: (error) => {
+      console.error("Swap failed:", error.message)
+    },
+  }}
+/>
+```
+
+### `onToast`
+
+Override the terminal's internal toast notifications and route them through your own notification system. Useful when `independentWallet: false` (the terminal's `<Toaster>` is not mounted in hosted mode).
+
+```tsx
+<ZentraTerminal
+  initProps={{
+    onToast: ({ title, description, variant }) => {
+      // variant: "default" | "success" | "info" | "error"
+      yourNotify(title, { body: description, type: variant })
+    },
+  }}
+/>
+```
+
+---
+
+## CDN / Vanilla JS API
+
+Three methods are exposed on `window.ZentraX`.
+
+### `ZentraX.init(options)`
+
+Mount the terminal into a DOM element.
+
+```html
+<div id="zentra-swap"></div>
+
+<script>
+  window.ZentraX.init({
+    containerId: "zentra-swap",          // required — ID of the mount element
+    displayMode: "Integrated",           // "Integrated" | "Modal" | "Widget"
+    themeType: "Dark",                   // "Dark" | "Light"
+    theme: {
+      primary: "#97CBDC",
+      bg_primary: "#0a0f1a",
+    },
+    independentWallet: true,
+    walletConnectProjectId: "YOUR_REOWN_PROJECT_ID",
+    defaultPair: { from: "PHRS", to: "USDC" },
+    initialSlippage: 0.5,
+    showBranding: true,
+    onSwapSuccess: function(txHash) {
+      console.log("Swap confirmed:", txHash)
+    },
+  })
+</script>
+```
+
+### `ZentraX.update(containerId, options)`
+
+Update an existing instance with new options without remounting (wallet connection is preserved).
+
+```js
+window.ZentraX.update("zentra-swap", {
+  themeType: "Light",
+  defaultPair: { from: "PHRS", to: "USDT" },
 })
 ```
 
-All fields except `container` are optional.
+### `ZentraX.destroy(containerId?)`
+
+Unmount an instance. Omit `containerId` to destroy all instances.
+
+```js
+window.ZentraX.destroy("zentra-swap") // specific instance
+window.ZentraX.destroy()              // all instances
+```
+
+### Auto-init via data attributes
+
+Add `data-zentra-terminal` to any element and the terminal will mount automatically on page load — no JavaScript required:
+
+```html
+<div
+  data-zentra-terminal
+  data-mode="Integrated"
+  data-theme="Dark"
+  data-position="bottom-right"
+  data-wallet-connect-id="YOUR_REOWN_PROJECT_ID"
+></div>
+```
+
+| Attribute | Maps to |
+|-----------|---------|
+| `data-mode` | `displayMode` |
+| `data-theme` | `themeType` |
+| `data-position` | `widgetPosition` |
+| `data-wallet-connect-id` | `walletConnectProjectId` |
