@@ -3,7 +3,7 @@ title: ZentraFi Terminal
 description: An embeddable DEX swap widget for ZentraFi on Pharos EVM — drop a fully functional swap interface into any dApp in minutes.
 ---
 
-A lite, embeddable swap terminal built on top of the ZentraFi Swap Aggregator. Supports React and vanilla HTML/JS with three display modes, full theme control, and two wallet integration strategies.
+A lite, embeddable swap terminal built on top of the ZentraFi Swap Aggregator. Supports React with three display modes, full theme control, and two wallet integration strategies.
 
 **Live demo:** [terminal.zentrafi.xyz](https://terminal.zentrafi.xyz)
 
@@ -27,7 +27,7 @@ yarn add @zentrafi/terminal wagmi viem @tanstack/react-query @rainbow-me/rainbow
 ```
 
   </Tab>
-  <Tab title="CDN (HTML / Vanilla JS)">
+  {/* <Tab title="CDN (HTML / Vanilla JS)">
 
 No build step required — paste into your `<head>` and `<body>`:
 
@@ -36,7 +36,7 @@ No build step required — paste into your `<head>` and `<body>`:
 <script src="https://cdn.zentrafi.xyz/terminal/main.js"></script>
 ```
 
-  </Tab>
+  </Tab> */}
 </Tabs>
 
 ---
@@ -74,7 +74,7 @@ export default function Page() {
 </Note>
 
   </Tab>
-  <Tab title="CDN (HTML)">
+  {/* <Tab title="CDN (HTML)">
 
 ```html
 <!-- mount point -->
@@ -91,7 +91,7 @@ export default function Page() {
 </script>
 ```
 
-  </Tab>
+  </Tab> */}
 </Tabs>
 
 ---
@@ -309,6 +309,7 @@ Override the terminal's internal toast notifications and route them through your
 />
 ```
 
+{/*
 ---
 
 ## CDN / Vanilla JS API
@@ -383,3 +384,5 @@ Add `data-zentra-terminal` to any element and the terminal will mount automatica
 | `data-theme` | `themeType` |
 | `data-position` | `widgetPosition` |
 | `data-wallet-connect-id` | `walletConnectProjectId` |
+
+*/}
